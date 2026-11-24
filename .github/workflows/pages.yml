@@ -22,15 +22,15 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: xdk-amz/valkey-perf-benchmark
-          ref: c67c4e89d33d7833fa7b875acd802a8e9f69c1fe
+          ref: d06d2b9dcc8620d47335e82664214d3ee7834e3a
           path: vpb
           persist-credentials: false
       - name: Check
         working-directory: vpb
-        run: python3 -m dashboards.explorer check ../data --data-root ../data
+        run: python3 -m dashboards.explorer check ../data --data-root ../data --metrics ../metrics.json
       - name: Build site
         working-directory: vpb
-        run: python3 -m dashboards.explorer build ../data --out ../site
+        run: python3 -m dashboards.explorer build ../data --metrics ../metrics.json --out ../site
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
