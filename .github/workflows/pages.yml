@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: xdk-amz/valkey-perf-benchmark
-          ref: 6758d493ece460507c93994a08059802cdf1233f
+          ref: 1435c5285c14de6be76c81f92ebec224c3e8be86
           path: vpb
           persist-credentials: false
       - name: Check
