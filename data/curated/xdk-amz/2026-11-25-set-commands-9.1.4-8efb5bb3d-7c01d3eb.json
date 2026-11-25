@@ -1,0 +1,655 @@
+{
+ "schema": "vpb-result",
+ "run": {
+  "id": "2026-11-25-set-commands-9.1.4-8efb5bb3d-7c01d3eb",
+  "data_set": "curated:xdk-amz",
+  "started": "2026-11-25T01:37:43+00:00",
+  "finished": "2026-11-25T01:51:52+00:00",
+  "build": {
+   "repo": "valkey-io/valkey",
+   "ref": "9.1.4",
+   "sha": "8efb5bb3dd3b69f707777352a105bbea911affd3",
+   "time": "2026-11-18T11:46:32-08:00",
+   "version": "9.1.4",
+   "source_date_epoch": 1795031192
+  },
+  "harness": {
+   "repo": "xdk-amz/valkey-perf-benchmark",
+   "sha": "1435c5285c14de6be76c81f92ebec224c3e8be86",
+   "config": null,
+   "config_inline": {
+    "test_name": "Set commands",
+    "set_matrix": {
+     "duration": 16,
+     "window": [
+      3,
+      13
+     ],
+     "clients": 50,
+     "pipelines": [
+      1
+     ],
+     "ttl_seconds": 100000000,
+     "shapes": {
+      "listpack16": {
+       "members": 16,
+       "member_size": 16,
+       "encoding": "listpack",
+       "encoding_with_ttl": "listpack",
+       "toggles": 8,
+       "population": 4000000
+      },
+      "listpack128": {
+       "members": 128,
+       "member_size": 16,
+       "encoding": "listpack",
+       "encoding_with_ttl": "listpack",
+       "toggles": 8,
+       "grow_headroom": 64,
+       "population": 400000,
+       "only_mixes": [
+        "none",
+        "exp_all_but_1",
+        "exp_half",
+        "exp_10pct",
+        "exp_one"
+       ]
+      },
+      "intset512": {
+       "members": 512,
+       "integer": true,
+       "encoding": "intset",
+       "encoding_with_ttl": "hashtable",
+       "toggles": 16,
+       "population": 400000,
+       "grow_headroom": 64
+      },
+      "hashtable100k": {
+       "members": 100000,
+       "member_size": 16,
+       "encoding": "hashtable",
+       "encoding_with_ttl": "hashtable",
+       "toggles": 1000,
+       "population": 1000
+      }
+     },
+     "ttl_mixes": {
+      "none": {},
+      "one": {
+       "count": 1
+      },
+      "10pct": {
+       "fraction": 0.1
+      },
+      "half": {
+       "fraction": 0.5
+      },
+      "all": {
+       "fraction": 1.0
+      },
+      "exp_all_but_1": {
+       "expired": true,
+       "live": 1,
+       "skip_commands": [
+        "spop"
+       ]
+      },
+      "exp_half": {
+       "expired": true,
+       "fraction": 0.5
+      },
+      "exp_10pct": {
+       "expired": true,
+       "fraction": 0.1
+      },
+      "exp_one": {
+       "expired": true,
+       "count": 1
+      }
+     },
+     "commands": {
+      "sadd_existing": {
+       "command": "SADD {key} {member}"
+      },
+      "sadd_new": {
+       "command": "SADD {rand_key} {new_member}",
+       "layout": "population",
+       "grows": true
+      },
+      "srem_sadd": {
+       "writes": [
+        "SREM {key} {toggle}",
+        "SADD {key} {toggle}"
+       ],
+       "layout": "toggle"
+      },
+      "sismember": {
+       "command": "SISMEMBER {key} {member}",
+       "on_expired": true
+      },
+      "sismember_expired": {
+       "command": "SISMEMBER {key} {expired_member}",
+       "layout": "expired",
+       "on_expired": true,
+       "expired_only": true
+      },
+      "smismember": {
+       "command": "SMISMEMBER {key} {member} {member} {member} {member}",
+       "on_expired": true
+      },
+      "scard": {
+       "command": "SCARD {key}",
+       "on_expired": true
+      },
+      "smembers": {
+       "command": "SMEMBERS {key}",
+       "on_expired": true
+      },
+      "srandmember": {
+       "command": "SRANDMEMBER {key}",
+       "on_expired": true
+      },
+      "spop": {
+       "command": "SPOP {rand_key} 1",
+       "layout": "population",
+       "on_expired": true
+      },
+      "smove": {
+       "writes": [
+        "SMOVE {key} {key2} {toggle}",
+        "SMOVE {key2} {key} {toggle}"
+       ],
+       "layout": "two_toggle"
+      },
+      "sinter": {
+       "command": "SINTER {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sintercard": {
+       "command": "SINTERCARD 2 {key} {key2}",
+       "layout": "overlap"
+      },
+      "sinterstore": {
+       "command": "SINTERSTORE {dest} {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sunion": {
+       "command": "SUNION {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sunionstore": {
+       "command": "SUNIONSTORE {dest} {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sdiff": {
+       "command": "SDIFF {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sdiffstore": {
+       "command": "SDIFFSTORE {dest} {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sscan": {
+       "command": "SSCAN {key} 0 COUNT 10",
+       "on_expired": true
+      },
+      "saddex_new": {
+       "command": "SADDEX {rand_key} EX {ttl} MEMBERS 1 {new_member}",
+       "layout": "population",
+       "grows": true,
+       "adds_ttl": true,
+       "requires": [
+        "SADDEX"
+       ]
+      },
+      "saddex_existing": {
+       "command": "SADDEX {key} EX {ttl} MEMBERS 1 {toggle}",
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SADDEX"
+       ]
+      },
+      "sexpire": {
+       "command": "SEXPIRE {key} {ttl} MEMBERS 1 {toggle}",
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SEXPIRE"
+       ]
+      },
+      "spexpire": {
+       "command": "SPEXPIRE {key} {ttl_ms} MEMBERS 1 {toggle}",
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SPEXPIRE"
+       ]
+      },
+      "sexpireat": {
+       "command": "SEXPIREAT {key} {ttl_at} MEMBERS 1 {toggle}",
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SEXPIREAT"
+       ]
+      },
+      "spexpireat": {
+       "command": "SPEXPIREAT {key} {ttl_at_ms} MEMBERS 1 {toggle}",
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SPEXPIREAT"
+       ]
+      },
+      "spersist_sexpire": {
+       "writes": [
+        "SPERSIST {key} MEMBERS 1 {toggle}",
+        "SEXPIRE {key} {ttl} MEMBERS 1 {toggle}"
+       ],
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SPERSIST",
+        "SEXPIRE"
+       ]
+      },
+      "sttl": {
+       "command": "STTL {key} MEMBERS 1 {member}",
+       "requires": [
+        "STTL"
+       ]
+      },
+      "spttl": {
+       "command": "SPTTL {key} MEMBERS 1 {member}",
+       "requires": [
+        "SPTTL"
+       ]
+      },
+      "sexpiretime": {
+       "command": "SEXPIRETIME {key} MEMBERS 1 {member}",
+       "requires": [
+        "SEXPIRETIME"
+       ]
+      },
+      "spexpiretime": {
+       "command": "SPEXPIRETIME {key} MEMBERS 1 {member}",
+       "requires": [
+        "SPEXPIRETIME"
+       ]
+      }
+     },
+     "run_ttl_mixes": [
+      "none"
+     ],
+     "run_commands": [
+      "sadd_existing",
+      "sadd_new",
+      "srem_sadd",
+      "sismember",
+      "smismember",
+      "scard",
+      "smembers",
+      "srandmember",
+      "spop",
+      "smove",
+      "sinter",
+      "sintercard",
+      "sinterstore",
+      "sunion",
+      "sunionstore",
+      "sdiff",
+      "sdiffstore",
+      "sscan"
+     ]
+    },
+    "per_second_sampling": {
+     "sources": {
+      "valkey_info": {}
+     }
+    },
+    "custom-server-configs": {
+     "maxmemory-policy": "noeviction",
+     "enable-debug-command": "local"
+    },
+    "port": 6379,
+    "cluster_mode": false,
+    "tls_mode": false
+   }
+  },
+  "fingerprint": {
+   "hash": "7c01d3ebc7e107d55db410a060b7acf07cdd9b723618f894f24d6a2eff3fdccb",
+   "build": {
+    "settings": {
+     "malloc": "jemalloc-5.3.0",
+     "bits": "64",
+     "compiler": "11.5.0",
+     "multiplexing": "epoll",
+     "monotonic_clock": "ARM CNTVCT @ 1050 ticks/us"
+    },
+    "args": [
+     "BUILD_TLS=no"
+    ],
+    "binary_sha256": "205797249b23ae69d6622fb491bba287928bbcdd2b47ef30f0e27e0f5f98d3dd"
+   },
+   "server": {
+    "instance_type": "r7g.2xlarge",
+    "arch": "aarch64",
+    "cpu_model": "Arm Neoverse-V1 r1p1",
+    "cpu_microcode": "midr 0x00000000411fd401 revidr 0x0000000000000001",
+    "cpu_topology": "8 CPUs, 1 sockets x 8 cores x 1 threads, 1 NUMA nodes, L3 32 MiB",
+    "memory": "62 GiB",
+    "nic": "ena, speed not reported",
+    "virtualization": "vm amazon",
+    "cgroup_cpu_limit": "none",
+    "os": "Amazon Linux 2023.12.20261117",
+    "kernel": "6.1.190-237.442.amzn2023.aarch64",
+    "kernel_boot_options": "ro console=tty0 console=ttyS0,115200n8 nvme_core.io_timeout=4294967295 rd.emergency=poweroff rd.shell=0 selinux=1 security=selinux quiet numa_cma=1:64M",
+    "kernel_runtime_settings": {
+     "thp": "madvise",
+     "thp_defrag": "madvise",
+     "aslr": "full",
+     "numa_balancing": "off",
+     "cpufreq_governor": "not available",
+     "turbo": "not available",
+     "idle_states": "not available"
+    }
+   },
+   "client": {
+    "instance_type": "c7g.4xlarge",
+    "arch": "aarch64",
+    "cpu_model": "Arm Neoverse-V1 r1p1",
+    "cpu_microcode": "midr 0x00000000411fd401 revidr 0x0000000000000001",
+    "cpu_topology": "16 CPUs, 1 sockets x 16 cores x 1 threads, 1 NUMA nodes, L3 32 MiB",
+    "memory": "31 GiB",
+    "nic": "ena, speed not reported",
+    "virtualization": "vm amazon",
+    "cgroup_cpu_limit": "none",
+    "os": "Amazon Linux 2023.12.20261117",
+    "kernel": "6.1.190-237.442.amzn2023.aarch64",
+    "kernel_boot_options": "ro console=tty0 console=ttyS0,115200n8 nvme_core.io_timeout=4294967295 rd.emergency=poweroff rd.shell=0 selinux=1 security=selinux quiet numa_cma=1:64M",
+    "kernel_runtime_settings": {
+     "thp": "madvise",
+     "thp_defrag": "madvise",
+     "aslr": "full",
+     "numa_balancing": "off",
+     "cpufreq_governor": "not available",
+     "turbo": "not available",
+     "idle_states": "not available"
+    }
+   },
+   "server_config": {
+    "active-expire-effort": "1",
+    "activedefrag": "no",
+    "appendfsync": "everysec",
+    "appendonly": "no",
+    "cluster-enabled": "no",
+    "databases": "16",
+    "enable-debug-command": "yes",
+    "hash-max-listpack-entries": "512",
+    "hz": "10",
+    "io-threads": "4",
+    "lazyfree-lazy-eviction": "yes",
+    "lazyfree-lazy-expire": "yes",
+    "lazyfree-lazy-server-del": "yes",
+    "lazyfree-lazy-user-del": "yes",
+    "lazyfree-lazy-user-flush": "yes",
+    "list-max-listpack-size": "-2",
+    "maxclients": "10000",
+    "maxmemory": "0",
+    "maxmemory-policy": "noeviction",
+    "protected-mode": "no",
+    "save": "",
+    "set-max-intset-entries": "512",
+    "set-max-listpack-entries": "128",
+    "zset-max-listpack-entries": "128"
+   },
+   "load_generator": "valkey-benchmark 255.255.255 (git:8c82072a)",
+   "network_path": "network, separate hosts",
+   "pinning": "server CPUs 0-3, client CPUs 0-11",
+   "io_threads": 4,
+   "cores": 4
+  },
+  "reproduce": "git clone https://github.com/xdk-amz/valkey-perf-benchmark vpb && cd vpb && git checkout 1435c5285c14de6be76c81f92ebec224c3e8be86 && pip install -r requirements.txt && git clone https://github.com/valkey-io/valkey ../valkey && git -C ../valkey checkout 8efb5bb3dd3b69f707777352a105bbea911affd3 && python benchmark.py --commits 8efb5bb3dd3b69f707777352a105bbea911affd3 --repository valkey-io/valkey --valkey-path ../valkey --config config.json --runs 1 --mode client --use-running-server --target-ip <server-ip> (harness.config_inline saved as config.json)"
+ },
+ "cells": [
+  {
+   "id": "listpack16.none.scard.P1",
+   "family": "set commands",
+   "command": "scard",
+   "command_line": "SCARD set:a:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 165179.0,
+     "min": 159439.0,
+     "max": 166417.0,
+     "cv": 0.0155922
+    },
+    "avg_ms": {
+     "median": 0.191,
+     "min": 0.191,
+     "max": 0.196,
+     "cv": 0.010185
+    },
+    "p50_ms": {
+     "median": 0.191,
+     "min": 0.191,
+     "max": 0.191,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.231,
+     "min": 0.223,
+     "max": 0.239,
+     "cv": 0.0219032
+    },
+    "p99_ms": {
+     "median": 0.247,
+     "min": 0.247,
+     "max": 0.255,
+     "cv": 0.0128721
+    },
+    "server_ops": {
+     "median": 165142.0,
+     "min": 159686.0,
+     "max": 166365.0,
+     "cv": 0.0149307
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p29.listpack16.scard.r1",
+     "t": "2026-11-25T01:37:43+00:00",
+     "ok": true,
+     "ops": 159439.0,
+     "avg_ms": 0.196,
+     "p50_ms": 0.191,
+     "p95_ms": 0.239,
+     "p99_ms": 0.255,
+     "server_ops": 159686.0
+    },
+    {
+     "rep": 2,
+     "pair": "p29.listpack16.scard.r2",
+     "t": "2026-11-25T01:39:07+00:00",
+     "ok": true,
+     "ops": 165179.0,
+     "avg_ms": 0.193,
+     "p50_ms": 0.191,
+     "p95_ms": 0.231,
+     "p99_ms": 0.247,
+     "server_ops": 165142.0
+    },
+    {
+     "rep": 3,
+     "pair": "p29.listpack16.scard.r3",
+     "t": "2026-11-25T01:40:30+00:00",
+     "ok": true,
+     "ops": 166417.0,
+     "avg_ms": 0.191,
+     "p50_ms": 0.191,
+     "p95_ms": 0.223,
+     "p99_ms": 0.247,
+     "server_ops": 166365.0
+    },
+    {
+     "rep": 4,
+     "pair": "p29.listpack16.scard.r4",
+     "t": "2026-11-25T01:43:00+00:00",
+     "ok": true,
+     "ops": 164644.0,
+     "avg_ms": 0.191,
+     "p50_ms": 0.191,
+     "p95_ms": 0.231,
+     "p99_ms": 0.247,
+     "server_ops": 164702.0
+    },
+    {
+     "rep": 5,
+     "pair": "p29.listpack16.scard.r5",
+     "t": "2026-11-25T01:43:17+00:00",
+     "ok": true,
+     "ops": 166272.0,
+     "avg_ms": 0.191,
+     "p50_ms": 0.191,
+     "p95_ms": 0.231,
+     "p99_ms": 0.247,
+     "server_ops": 166248.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.smove.P1",
+   "family": "set commands",
+   "command": "smove",
+   "command_line": "SMOVE set:a:000000000000 set:b:000000000000 txxx__rand_int__ | SMOVE set:b:000000000000 set:a:000000000000 txxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 304052.0,
+     "min": 297362.0,
+     "max": 317535.0,
+     "cv": 0.0251125
+    },
+    "avg_ms": {
+     "median": 0.129,
+     "min": 0.126,
+     "max": 0.131,
+     "cv": 0.0133576
+    },
+    "p50_ms": {
+     "median": 0.119,
+     "min": 0.119,
+     "max": 0.127,
+     "cv": 0.0320719
+    },
+    "p95_ms": {
+     "median": 0.175,
+     "min": 0.167,
+     "max": 0.183,
+     "cv": 0.0289123
+    },
+    "p99_ms": {
+     "median": 0.231,
+     "min": 0.223,
+     "max": 0.239,
+     "cv": 0.025738
+    },
+    "server_ops": {
+     "median": 305862.0,
+     "min": 298392.0,
+     "max": 319375.0,
+     "cv": 0.0259659
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p29.listpack128.smove.r1",
+     "t": "2026-11-25T01:46:03+00:00",
+     "ok": true,
+     "ops": 304052.0,
+     "avg_ms": 0.129,
+     "p50_ms": 0.119,
+     "p95_ms": 0.175,
+     "p99_ms": 0.231,
+     "server_ops": 305862.0
+    },
+    {
+     "rep": 2,
+     "pair": "p29.listpack128.smove.r2",
+     "t": "2026-11-25T01:47:26+00:00",
+     "ok": true,
+     "ops": 299191.0,
+     "avg_ms": 0.13,
+     "p50_ms": 0.127,
+     "p95_ms": 0.175,
+     "p99_ms": 0.231,
+     "server_ops": 302898.0
+    },
+    {
+     "rep": 3,
+     "pair": "p29.listpack128.smove.r3",
+     "t": "2026-11-25T01:48:50+00:00",
+     "ok": true,
+     "ops": 317535.0,
+     "avg_ms": 0.126,
+     "p50_ms": 0.119,
+     "p95_ms": 0.167,
+     "p99_ms": 0.223,
+     "server_ops": 319375.0
+    },
+    {
+     "rep": 4,
+     "pair": "p29.listpack128.smove.r4",
+     "t": "2026-11-25T01:51:20+00:00",
+     "ok": true,
+     "ops": 312127.0,
+     "avg_ms": 0.128,
+     "p50_ms": 0.119,
+     "p95_ms": 0.175,
+     "p99_ms": 0.239,
+     "server_ops": 316391.0
+    },
+    {
+     "rep": 5,
+     "pair": "p29.listpack128.smove.r5",
+     "t": "2026-11-25T01:51:36+00:00",
+     "ok": true,
+     "ops": 297362.0,
+     "avg_ms": 0.131,
+     "p50_ms": 0.127,
+     "p95_ms": 0.183,
+     "p99_ms": 0.239,
+     "server_ops": 298392.0
+    }
+   ],
+   "missing": null
+  }
+ ]
+}

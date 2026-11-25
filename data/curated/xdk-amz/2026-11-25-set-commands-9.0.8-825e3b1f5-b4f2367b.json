@@ -1,0 +1,8145 @@
+{
+ "schema": "vpb-result",
+ "run": {
+  "id": "2026-11-25-set-commands-9.0.8-825e3b1f5-b4f2367b",
+  "data_set": "curated:xdk-amz",
+  "started": "2026-11-25T01:37:01+00:00",
+  "finished": "2026-11-25T02:20:12+00:00",
+  "build": {
+   "repo": "valkey-io/valkey",
+   "ref": "9.0.8",
+   "sha": "825e3b1f590984ac91c90f65059c5f235072084a",
+   "time": "2026-11-18T14:43:47-08:00",
+   "version": "9.0.8",
+   "source_date_epoch": 1795041827
+  },
+  "harness": {
+   "repo": "xdk-amz/valkey-perf-benchmark",
+   "sha": "1435c5285c14de6be76c81f92ebec224c3e8be86",
+   "config": null,
+   "config_inline": {
+    "test_name": "Set commands",
+    "set_matrix": {
+     "duration": 16,
+     "window": [
+      3,
+      13
+     ],
+     "clients": 50,
+     "pipelines": [
+      1
+     ],
+     "ttl_seconds": 100000000,
+     "shapes": {
+      "listpack16": {
+       "members": 16,
+       "member_size": 16,
+       "encoding": "listpack",
+       "encoding_with_ttl": "listpack",
+       "toggles": 8,
+       "population": 4000000
+      },
+      "listpack128": {
+       "members": 128,
+       "member_size": 16,
+       "encoding": "listpack",
+       "encoding_with_ttl": "listpack",
+       "toggles": 8,
+       "grow_headroom": 64,
+       "population": 400000,
+       "only_mixes": [
+        "none",
+        "exp_all_but_1",
+        "exp_half",
+        "exp_10pct",
+        "exp_one"
+       ]
+      },
+      "intset512": {
+       "members": 512,
+       "integer": true,
+       "encoding": "intset",
+       "encoding_with_ttl": "hashtable",
+       "toggles": 16,
+       "population": 400000,
+       "grow_headroom": 64
+      },
+      "hashtable100k": {
+       "members": 100000,
+       "member_size": 16,
+       "encoding": "hashtable",
+       "encoding_with_ttl": "hashtable",
+       "toggles": 1000,
+       "population": 1000
+      }
+     },
+     "ttl_mixes": {
+      "none": {},
+      "one": {
+       "count": 1
+      },
+      "10pct": {
+       "fraction": 0.1
+      },
+      "half": {
+       "fraction": 0.5
+      },
+      "all": {
+       "fraction": 1.0
+      },
+      "exp_all_but_1": {
+       "expired": true,
+       "live": 1,
+       "skip_commands": [
+        "spop"
+       ]
+      },
+      "exp_half": {
+       "expired": true,
+       "fraction": 0.5
+      },
+      "exp_10pct": {
+       "expired": true,
+       "fraction": 0.1
+      },
+      "exp_one": {
+       "expired": true,
+       "count": 1
+      }
+     },
+     "commands": {
+      "sadd_existing": {
+       "command": "SADD {key} {member}"
+      },
+      "sadd_new": {
+       "command": "SADD {rand_key} {new_member}",
+       "layout": "population",
+       "grows": true
+      },
+      "srem_sadd": {
+       "writes": [
+        "SREM {key} {toggle}",
+        "SADD {key} {toggle}"
+       ],
+       "layout": "toggle"
+      },
+      "sismember": {
+       "command": "SISMEMBER {key} {member}",
+       "on_expired": true
+      },
+      "sismember_expired": {
+       "command": "SISMEMBER {key} {expired_member}",
+       "layout": "expired",
+       "on_expired": true,
+       "expired_only": true
+      },
+      "smismember": {
+       "command": "SMISMEMBER {key} {member} {member} {member} {member}",
+       "on_expired": true
+      },
+      "scard": {
+       "command": "SCARD {key}",
+       "on_expired": true
+      },
+      "smembers": {
+       "command": "SMEMBERS {key}",
+       "on_expired": true
+      },
+      "srandmember": {
+       "command": "SRANDMEMBER {key}",
+       "on_expired": true
+      },
+      "spop": {
+       "command": "SPOP {rand_key} 1",
+       "layout": "population",
+       "on_expired": true
+      },
+      "smove": {
+       "writes": [
+        "SMOVE {key} {key2} {toggle}",
+        "SMOVE {key2} {key} {toggle}"
+       ],
+       "layout": "two_toggle"
+      },
+      "sinter": {
+       "command": "SINTER {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sintercard": {
+       "command": "SINTERCARD 2 {key} {key2}",
+       "layout": "overlap"
+      },
+      "sinterstore": {
+       "command": "SINTERSTORE {dest} {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sunion": {
+       "command": "SUNION {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sunionstore": {
+       "command": "SUNIONSTORE {dest} {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sdiff": {
+       "command": "SDIFF {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sdiffstore": {
+       "command": "SDIFFSTORE {dest} {key} {key2}",
+       "layout": "overlap",
+       "on_expired": true
+      },
+      "sscan": {
+       "command": "SSCAN {key} 0 COUNT 10",
+       "on_expired": true
+      },
+      "saddex_new": {
+       "command": "SADDEX {rand_key} EX {ttl} MEMBERS 1 {new_member}",
+       "layout": "population",
+       "grows": true,
+       "adds_ttl": true,
+       "requires": [
+        "SADDEX"
+       ]
+      },
+      "saddex_existing": {
+       "command": "SADDEX {key} EX {ttl} MEMBERS 1 {toggle}",
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SADDEX"
+       ]
+      },
+      "sexpire": {
+       "command": "SEXPIRE {key} {ttl} MEMBERS 1 {toggle}",
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SEXPIRE"
+       ]
+      },
+      "spexpire": {
+       "command": "SPEXPIRE {key} {ttl_ms} MEMBERS 1 {toggle}",
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SPEXPIRE"
+       ]
+      },
+      "sexpireat": {
+       "command": "SEXPIREAT {key} {ttl_at} MEMBERS 1 {toggle}",
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SEXPIREAT"
+       ]
+      },
+      "spexpireat": {
+       "command": "SPEXPIREAT {key} {ttl_at_ms} MEMBERS 1 {toggle}",
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SPEXPIREAT"
+       ]
+      },
+      "spersist_sexpire": {
+       "writes": [
+        "SPERSIST {key} MEMBERS 1 {toggle}",
+        "SEXPIRE {key} {ttl} MEMBERS 1 {toggle}"
+       ],
+       "layout": "toggle",
+       "toggle_ttl": true,
+       "requires": [
+        "SPERSIST",
+        "SEXPIRE"
+       ]
+      },
+      "sttl": {
+       "command": "STTL {key} MEMBERS 1 {member}",
+       "requires": [
+        "STTL"
+       ]
+      },
+      "spttl": {
+       "command": "SPTTL {key} MEMBERS 1 {member}",
+       "requires": [
+        "SPTTL"
+       ]
+      },
+      "sexpiretime": {
+       "command": "SEXPIRETIME {key} MEMBERS 1 {member}",
+       "requires": [
+        "SEXPIRETIME"
+       ]
+      },
+      "spexpiretime": {
+       "command": "SPEXPIRETIME {key} MEMBERS 1 {member}",
+       "requires": [
+        "SPEXPIRETIME"
+       ]
+      }
+     },
+     "run_ttl_mixes": [
+      "none"
+     ],
+     "run_commands": [
+      "sadd_existing",
+      "sadd_new",
+      "srem_sadd",
+      "sismember",
+      "smismember",
+      "scard",
+      "smembers",
+      "srandmember",
+      "spop",
+      "smove",
+      "sinter",
+      "sintercard",
+      "sinterstore",
+      "sunion",
+      "sunionstore",
+      "sdiff",
+      "sdiffstore",
+      "sscan"
+     ]
+    },
+    "per_second_sampling": {
+     "sources": {
+      "valkey_info": {}
+     }
+    },
+    "custom-server-configs": {
+     "maxmemory-policy": "noeviction",
+     "enable-debug-command": "local"
+    },
+    "port": 6379,
+    "cluster_mode": false,
+    "tls_mode": false
+   }
+  },
+  "fingerprint": {
+   "hash": "b4f2367b0b957e78d64206d0b8ab1af89a6b51cd1f271c9fd4ac114514a6c98e",
+   "build": {
+    "settings": {
+     "malloc": "jemalloc-5.3.0",
+     "bits": "64",
+     "compiler": "11.5.0",
+     "multiplexing": "epoll",
+     "monotonic_clock": "POSIX clock_gettime"
+    },
+    "args": [
+     "BUILD_TLS=no"
+    ],
+    "binary_sha256": "ee10214981ee6194e30ea163d0ec3c2ee214778556e9d34ef1a4738890dbf6be"
+   },
+   "server": {
+    "instance_type": "r7g.2xlarge",
+    "arch": "aarch64",
+    "cpu_model": "Arm Neoverse-V1 r1p1",
+    "cpu_microcode": "midr 0x00000000411fd401 revidr 0x0000000000000001",
+    "cpu_topology": "8 CPUs, 1 sockets x 8 cores x 1 threads, 1 NUMA nodes, L3 32 MiB",
+    "memory": "62 GiB",
+    "nic": "ena, speed not reported",
+    "virtualization": "vm amazon",
+    "cgroup_cpu_limit": "none",
+    "os": "Amazon Linux 2023.12.20261117",
+    "kernel": "6.1.190-237.442.amzn2023.aarch64",
+    "kernel_boot_options": "ro console=tty0 console=ttyS0,115200n8 nvme_core.io_timeout=4294967295 rd.emergency=poweroff rd.shell=0 selinux=1 security=selinux quiet numa_cma=1:64M",
+    "kernel_runtime_settings": {
+     "thp": "madvise",
+     "thp_defrag": "madvise",
+     "aslr": "full",
+     "numa_balancing": "off",
+     "cpufreq_governor": "not available",
+     "turbo": "not available",
+     "idle_states": "not available"
+    }
+   },
+   "client": {
+    "instance_type": "c8g.4xlarge",
+    "arch": "aarch64",
+    "cpu_model": "Arm Neoverse-V2 r0p1",
+    "cpu_microcode": "midr 0x00000000410fd4f1 revidr 0x0000000000000017",
+    "cpu_topology": "16 CPUs, 1 sockets x 16 cores x 1 threads, 1 NUMA nodes, L3 36 MiB",
+    "memory": "31 GiB",
+    "nic": "ena, speed not reported",
+    "virtualization": "vm amazon",
+    "cgroup_cpu_limit": "none",
+    "os": "Amazon Linux 2023.12.20261117",
+    "kernel": "6.1.190-237.442.amzn2023.aarch64",
+    "kernel_boot_options": "ro console=tty0 console=ttyS0,115200n8 nvme_core.io_timeout=4294967295 rd.emergency=poweroff rd.shell=0 selinux=1 security=selinux quiet numa_cma=1:64M",
+    "kernel_runtime_settings": {
+     "thp": "madvise",
+     "thp_defrag": "madvise",
+     "aslr": "full",
+     "numa_balancing": "off",
+     "cpufreq_governor": "not available",
+     "turbo": "not available",
+     "idle_states": "not available"
+    }
+   },
+   "server_config": {
+    "active-expire-effort": "1",
+    "activedefrag": "no",
+    "appendfsync": "everysec",
+    "appendonly": "no",
+    "cluster-enabled": "no",
+    "databases": "16",
+    "enable-debug-command": "yes",
+    "hash-max-listpack-entries": "512",
+    "hz": "10",
+    "io-threads": "4",
+    "lazyfree-lazy-eviction": "yes",
+    "lazyfree-lazy-expire": "yes",
+    "lazyfree-lazy-server-del": "yes",
+    "lazyfree-lazy-user-del": "yes",
+    "lazyfree-lazy-user-flush": "yes",
+    "list-max-listpack-size": "-2",
+    "maxclients": "10000",
+    "maxmemory": "0",
+    "maxmemory-policy": "noeviction",
+    "protected-mode": "no",
+    "save": "",
+    "set-max-intset-entries": "512",
+    "set-max-listpack-entries": "128",
+    "zset-max-listpack-entries": "128"
+   },
+   "load_generator": "valkey-benchmark 255.255.255 (git:8c82072a)",
+   "network_path": "network, separate hosts",
+   "pinning": "server CPUs 0-3, client CPUs 0-11",
+   "io_threads": 4,
+   "cores": 4
+  },
+  "reproduce": "git clone https://github.com/xdk-amz/valkey-perf-benchmark vpb && cd vpb && git checkout 1435c5285c14de6be76c81f92ebec224c3e8be86 && pip install -r requirements.txt && git clone https://github.com/valkey-io/valkey ../valkey && git -C ../valkey checkout 825e3b1f590984ac91c90f65059c5f235072084a && python benchmark.py --commits 825e3b1f590984ac91c90f65059c5f235072084a --repository valkey-io/valkey --valkey-path ../valkey --config config.json --runs 1 --mode client --use-running-server --target-ip <server-ip> (harness.config_inline saved as config.json)"
+ },
+ "cells": [
+  {
+   "id": "listpack16.none.spop.P1",
+   "family": "set commands",
+   "command": "spop",
+   "command_line": "SPOP set:a:__rand_int__ 1",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 194259.0,
+     "min": 193918.0,
+     "max": 200767.0,
+     "cv": 0.013445
+    },
+    "avg_ms": {
+     "median": 0.177,
+     "min": 0.174,
+     "max": 0.177,
+     "cv": 0.00661856
+    },
+    "p50_ms": {
+     "median": 0.175,
+     "min": 0.159,
+     "max": 0.175,
+     "cv": 0.0372526
+    },
+    "p95_ms": {
+     "median": 0.223,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0178307
+    },
+    "p99_ms": {
+     "median": 0.271,
+     "min": 0.263,
+     "max": 0.287,
+     "cv": 0.0342242
+    },
+    "server_ops": {
+     "median": 193885.0,
+     "min": 192879.0,
+     "max": 200409.0,
+     "cv": 0.0142359
+    },
+    "bytes_per_key": {
+     "median": 377.5,
+     "min": 377.5,
+     "max": 377.5,
+     "cv": 0.0
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p3.listpack16.spop.r1",
+     "t": "2026-11-25T01:38:16+00:00",
+     "ok": true,
+     "ops": 194041.0,
+     "avg_ms": 0.177,
+     "p50_ms": 0.175,
+     "p95_ms": 0.223,
+     "p99_ms": 0.271,
+     "server_ops": 193289.0,
+     "bytes_per_key": 377.5
+    },
+    {
+     "rep": 2,
+     "pair": "p3.listpack16.spop.r2",
+     "t": "2026-11-25T01:44:05+00:00",
+     "ok": true,
+     "ops": 200767.0,
+     "avg_ms": 0.174,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 200409.0,
+     "bytes_per_key": 377.5
+    },
+    {
+     "rep": 3,
+     "pair": "p3.listpack16.spop.r3",
+     "t": "2026-11-25T01:46:25+00:00",
+     "ok": true,
+     "ops": 194693.0,
+     "avg_ms": 0.177,
+     "p50_ms": 0.175,
+     "p95_ms": 0.223,
+     "p99_ms": 0.279,
+     "server_ops": 192879.0,
+     "bytes_per_key": 377.5
+    },
+    {
+     "rep": 4,
+     "pair": "p3.listpack16.spop.r4",
+     "t": "2026-11-25T01:50:31+00:00",
+     "ok": true,
+     "ops": 194259.0,
+     "avg_ms": 0.176,
+     "p50_ms": 0.175,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 194226.0,
+     "bytes_per_key": 377.5
+    },
+    {
+     "rep": 5,
+     "pair": "p3.listpack16.spop.r5",
+     "t": "2026-11-25T01:59:28+00:00",
+     "ok": true,
+     "ops": 193918.0,
+     "avg_ms": 0.177,
+     "p50_ms": 0.175,
+     "p95_ms": 0.223,
+     "p99_ms": 0.287,
+     "server_ops": 193885.0,
+     "bytes_per_key": 377.5
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.sadd_new.P1",
+   "family": "set commands",
+   "command": "sadd_new",
+   "command_line": "SADD set:a:__rand_int__ nxxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 202973.0,
+     "min": 197165.0,
+     "max": 203059.0,
+     "cv": 0.0113739
+    },
+    "avg_ms": {
+     "median": 0.17,
+     "min": 0.169,
+     "max": 0.174,
+     "cv": 0.0108718
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.159,
+     "max": 0.167,
+     "cv": 0.0199253
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0179614
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.255,
+     "max": 0.271,
+     "cv": 0.0192382
+    },
+    "server_ops": {
+     "median": 203016.0,
+     "min": 196280.0,
+     "max": 203403.0,
+     "cv": 0.0137457
+    },
+    "bytes_per_key": {
+     "median": 1334.0,
+     "min": 1334.0,
+     "max": 1334.0,
+     "cv": 0.0
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p5.listpack128.sadd_new.r1",
+     "t": "2026-11-25T01:37:14+00:00",
+     "ok": true,
+     "ops": 203059.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 203016.0,
+     "bytes_per_key": 1334.0
+    },
+    {
+     "rep": 2,
+     "pair": "p5.listpack128.sadd_new.r2",
+     "t": "2026-11-25T01:40:15+00:00",
+     "ok": true,
+     "ops": 202432.0,
+     "avg_ms": 0.17,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 203403.0,
+     "bytes_per_key": 1334.0
+    },
+    {
+     "rep": 3,
+     "pair": "p5.listpack128.sadd_new.r3",
+     "t": "2026-11-25T01:41:29+00:00",
+     "ok": true,
+     "ops": 202973.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 203388.0,
+     "bytes_per_key": 1334.0
+    },
+    {
+     "rep": 4,
+     "pair": "p5.listpack128.sadd_new.r4",
+     "t": "2026-11-25T01:43:39+00:00",
+     "ok": true,
+     "ops": 203026.0,
+     "avg_ms": 0.171,
+     "p50_ms": 0.159,
+     "p95_ms": 0.223,
+     "p99_ms": 0.263,
+     "server_ops": 203000.0,
+     "bytes_per_key": 1334.0
+    },
+    {
+     "rep": 5,
+     "pair": "p5.listpack128.sadd_new.r5",
+     "t": "2026-11-25T01:48:23+00:00",
+     "ok": true,
+     "ops": 197165.0,
+     "avg_ms": 0.174,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.271,
+     "server_ops": 196280.0,
+     "bytes_per_key": 1334.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.spop.P1",
+   "family": "set commands",
+   "command": "spop",
+   "command_line": "SPOP set:a:__rand_int__ 1",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 200250.0,
+     "min": 196457.0,
+     "max": 201187.0,
+     "cv": 0.0100345
+    },
+    "avg_ms": {
+     "median": 0.174,
+     "min": 0.173,
+     "max": 0.176,
+     "cv": 0.00669455
+    },
+    "p50_ms": {
+     "median": 0.167,
+     "min": 0.159,
+     "max": 0.167,
+     "cv": 0.019347
+    },
+    "p95_ms": {
+     "median": 0.223,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0144535
+    },
+    "p99_ms": {
+     "median": 0.287,
+     "min": 0.263,
+     "max": 0.367,
+     "cv": 0.128264
+    },
+    "server_ops": {
+     "median": 199804.0,
+     "min": 195579.0,
+     "max": 200509.0,
+     "cv": 0.0103572
+    },
+    "bytes_per_key": {
+     "median": 5174.0,
+     "min": 5174.0,
+     "max": 5174.0,
+     "cv": 0.0
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p6.intset512.spop.r1",
+     "t": "2026-11-25T01:38:00+00:00",
+     "ok": true,
+     "ops": 200250.0,
+     "avg_ms": 0.174,
+     "p50_ms": 0.167,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 199870.0,
+     "bytes_per_key": 5174.0
+    },
+    {
+     "rep": 2,
+     "pair": "p6.intset512.spop.r2",
+     "t": "2026-11-25T01:43:03+00:00",
+     "ok": true,
+     "ops": 196775.0,
+     "avg_ms": 0.175,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.367,
+     "server_ops": 196261.0,
+     "bytes_per_key": 5174.0
+    },
+    {
+     "rep": 3,
+     "pair": "p6.intset512.spop.r3",
+     "t": "2026-11-25T01:45:09+00:00",
+     "ok": true,
+     "ops": 200478.0,
+     "avg_ms": 0.173,
+     "p50_ms": 0.159,
+     "p95_ms": 0.223,
+     "p99_ms": 0.327,
+     "server_ops": 199804.0,
+     "bytes_per_key": 5174.0
+    },
+    {
+     "rep": 4,
+     "pair": "p6.intset512.spop.r4",
+     "t": "2026-11-25T01:48:42+00:00",
+     "ok": true,
+     "ops": 196457.0,
+     "avg_ms": 0.176,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.287,
+     "server_ops": 195579.0,
+     "bytes_per_key": 5174.0
+    },
+    {
+     "rep": 5,
+     "pair": "p6.intset512.spop.r5",
+     "t": "2026-11-25T01:56:31+00:00",
+     "ok": true,
+     "ops": 201187.0,
+     "avg_ms": 0.173,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.271,
+     "server_ops": 200509.0,
+     "bytes_per_key": 5174.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.spop.P1",
+   "family": "set commands",
+   "command": "spop",
+   "command_line": "SPOP set:a:__rand_int__ 1",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 200842.0,
+     "min": 200103.0,
+     "max": 203497.0,
+     "cv": 0.00599217
+    },
+    "avg_ms": {
+     "median": 0.175,
+     "min": 0.173,
+     "max": 0.177,
+     "cv": 0.00853286
+    },
+    "p50_ms": {
+     "median": 0.175,
+     "min": 0.175,
+     "max": 0.175,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.231,
+     "cv": 0.0291174
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.255,
+     "max": 0.295,
+     "cv": 0.0520854
+    },
+    "server_ops": {
+     "median": 200834.0,
+     "min": 200119.0,
+     "max": 203555.0,
+     "cv": 0.00608433
+    },
+    "bytes_per_key": {
+     "median": 2614.0,
+     "min": 2614.0,
+     "max": 2614.0,
+     "cv": 0.0
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p8.listpack128.spop.r1",
+     "t": "2026-11-25T01:38:07+00:00",
+     "ok": true,
+     "ops": 200430.0,
+     "avg_ms": 0.177,
+     "p50_ms": 0.175,
+     "p95_ms": 0.231,
+     "p99_ms": 0.295,
+     "server_ops": 200449.0,
+     "bytes_per_key": 2614.0
+    },
+    {
+     "rep": 2,
+     "pair": "p8.listpack128.spop.r2",
+     "t": "2026-11-25T01:42:56+00:00",
+     "ok": true,
+     "ops": 200932.0,
+     "avg_ms": 0.175,
+     "p50_ms": 0.175,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 200914.0,
+     "bytes_per_key": 2614.0
+    },
+    {
+     "rep": 3,
+     "pair": "p8.listpack128.spop.r3",
+     "t": "2026-11-25T01:44:52+00:00",
+     "ok": true,
+     "ops": 200103.0,
+     "avg_ms": 0.177,
+     "p50_ms": 0.175,
+     "p95_ms": 0.223,
+     "p99_ms": 0.263,
+     "server_ops": 200119.0,
+     "bytes_per_key": 2614.0
+    },
+    {
+     "rep": 4,
+     "pair": "p8.listpack128.spop.r4",
+     "t": "2026-11-25T01:48:22+00:00",
+     "ok": true,
+     "ops": 200842.0,
+     "avg_ms": 0.175,
+     "p50_ms": 0.175,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 200834.0,
+     "bytes_per_key": 2614.0
+    },
+    {
+     "rep": 5,
+     "pair": "p8.listpack128.spop.r5",
+     "t": "2026-11-25T01:56:01+00:00",
+     "ok": true,
+     "ops": 203497.0,
+     "avg_ms": 0.173,
+     "p50_ms": 0.175,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 203555.0,
+     "bytes_per_key": 2614.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.sintercard.P1",
+   "family": "set commands",
+   "command": "sintercard",
+   "command_line": "SINTERCARD 2 set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 186.4,
+     "min": 184.88,
+     "max": 186.58,
+     "cv": 0.00340101
+    },
+    "avg_ms": {
+     "median": 266.027,
+     "min": 265.787,
+     "max": 268.196,
+     "cv": 0.00337763
+    },
+    "p50_ms": {
+     "median": 268.031,
+     "min": 268.031,
+     "max": 268.799,
+     "cv": 0.00111299
+    },
+    "p95_ms": {
+     "median": 269.567,
+     "min": 268.799,
+     "max": 279.039,
+     "cv": 0.0143221
+    },
+    "p99_ms": {
+     "median": 278.015,
+     "min": 269.055,
+     "max": 290.303,
+     "cv": 0.0250669
+    },
+    "server_ops": {
+     "median": 186.45,
+     "min": 185.31,
+     "max": 186.58,
+     "cv": 0.00255099
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p15.hashtable100k.sintercard.r1",
+     "t": "2026-11-25T01:37:01+00:00",
+     "ok": true,
+     "ops": 186.4,
+     "avg_ms": 266.027,
+     "p50_ms": 268.287,
+     "p95_ms": 268.799,
+     "p99_ms": 269.055,
+     "server_ops": 186.45
+    },
+    {
+     "rep": 2,
+     "pair": "p15.hashtable100k.sintercard.r2",
+     "t": "2026-11-25T01:39:02+00:00",
+     "ok": true,
+     "ops": 186.58,
+     "avg_ms": 265.787,
+     "p50_ms": 268.031,
+     "p95_ms": 268.799,
+     "p99_ms": 279.039,
+     "server_ops": 186.54
+    },
+    {
+     "rep": 3,
+     "pair": "p15.hashtable100k.sintercard.r3",
+     "t": "2026-11-25T01:39:53+00:00",
+     "ok": true,
+     "ops": 186.3,
+     "avg_ms": 266.178,
+     "p50_ms": 268.031,
+     "p95_ms": 270.847,
+     "p99_ms": 278.015,
+     "server_ops": 186.58
+    },
+    {
+     "rep": 4,
+     "pair": "p15.hashtable100k.sintercard.r4",
+     "t": "2026-11-25T01:41:19+00:00",
+     "ok": true,
+     "ops": 186.5,
+     "avg_ms": 265.89,
+     "p50_ms": 268.031,
+     "p95_ms": 269.567,
+     "p99_ms": 274.687,
+     "server_ops": 186.36
+    },
+    {
+     "rep": 5,
+     "pair": "p15.hashtable100k.sintercard.r5",
+     "t": "2026-11-25T01:44:28+00:00",
+     "ok": true,
+     "ops": 184.88,
+     "avg_ms": 268.196,
+     "p50_ms": 268.799,
+     "p95_ms": 279.039,
+     "p99_ms": 290.303,
+     "server_ops": 185.31
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.sintercard.P1",
+   "family": "set commands",
+   "command": "sintercard",
+   "command_line": "SINTERCARD 2 set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 203062.0,
+     "min": 201904.0,
+     "max": 209611.0,
+     "cv": 0.0157905
+    },
+    "avg_ms": {
+     "median": 0.169,
+     "min": 0.166,
+     "max": 0.17,
+     "cv": 0.0108979
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.151,
+     "max": 0.159,
+     "cv": 0.0203304
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0147738
+    },
+    "p99_ms": {
+     "median": 0.271,
+     "min": 0.255,
+     "max": 0.287,
+     "cv": 0.0393957
+    },
+    "server_ops": {
+     "median": 204681.0,
+     "min": 201873.0,
+     "max": 209442.0,
+     "cv": 0.0140688
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p15.listpack16.sintercard.r1",
+     "t": "2026-11-25T01:45:35+00:00",
+     "ok": true,
+     "ops": 208147.0,
+     "avg_ms": 0.166,
+     "p50_ms": 0.159,
+     "p95_ms": 0.223,
+     "p99_ms": 0.287,
+     "server_ops": 208037.0
+    },
+    {
+     "rep": 2,
+     "pair": "p15.listpack16.sintercard.r2",
+     "t": "2026-11-25T01:47:31+00:00",
+     "ok": true,
+     "ops": 209611.0,
+     "avg_ms": 0.166,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 209442.0
+    },
+    {
+     "rep": 3,
+     "pair": "p15.listpack16.sintercard.r3",
+     "t": "2026-11-25T01:48:21+00:00",
+     "ok": true,
+     "ops": 203062.0,
+     "avg_ms": 0.17,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 203052.0
+    },
+    {
+     "rep": 4,
+     "pair": "p15.listpack16.sintercard.r4",
+     "t": "2026-11-25T01:49:45+00:00",
+     "ok": true,
+     "ops": 201904.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 201873.0
+    },
+    {
+     "rep": 5,
+     "pair": "p15.listpack16.sintercard.r5",
+     "t": "2026-11-25T01:52:47+00:00",
+     "ok": true,
+     "ops": 202193.0,
+     "avg_ms": 0.17,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 204681.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.smove.P1",
+   "family": "set commands",
+   "command": "smove",
+   "command_line": "SMOVE set:a:000000000000 set:b:000000000000 txxx__rand_int__ | SMOVE set:b:000000000000 set:a:000000000000 txxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 377358.0,
+     "min": 363020.0,
+     "max": 382477.0,
+     "cv": 0.0176545
+    },
+    "avg_ms": {
+     "median": 0.112,
+     "min": 0.111,
+     "max": 0.116,
+     "cv": 0.0152523
+    },
+    "p50_ms": {
+     "median": 0.111,
+     "min": 0.111,
+     "max": 0.111,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.167,
+     "min": 0.167,
+     "max": 0.175,
+     "cv": 0.0189798
+    },
+    "p99_ms": {
+     "median": 0.199,
+     "min": 0.199,
+     "max": 0.199,
+     "cv": 0.0
+    },
+    "server_ops": {
+     "median": 377292.0,
+     "min": 364207.0,
+     "max": 383874.0,
+     "cv": 0.0188446
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p16.hashtable100k.smove.r1",
+     "t": "2026-11-25T01:37:01+00:00",
+     "ok": true,
+     "ops": 382477.0,
+     "avg_ms": 0.112,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.199,
+     "server_ops": 383874.0
+    },
+    {
+     "rep": 2,
+     "pair": "p16.hashtable100k.smove.r2",
+     "t": "2026-11-25T01:38:59+00:00",
+     "ok": true,
+     "ops": 376002.0,
+     "avg_ms": 0.112,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.199,
+     "server_ops": 375450.0
+    },
+    {
+     "rep": 3,
+     "pair": "p16.hashtable100k.smove.r3",
+     "t": "2026-11-25T01:39:50+00:00",
+     "ok": true,
+     "ops": 377358.0,
+     "avg_ms": 0.113,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.199,
+     "server_ops": 383236.0
+    },
+    {
+     "rep": 4,
+     "pair": "p16.hashtable100k.smove.r4",
+     "t": "2026-11-25T01:41:14+00:00",
+     "ok": true,
+     "ops": 363020.0,
+     "avg_ms": 0.116,
+     "p50_ms": 0.111,
+     "p95_ms": 0.175,
+     "p99_ms": 0.199,
+     "server_ops": 364207.0
+    },
+    {
+     "rep": 5,
+     "pair": "p16.hashtable100k.smove.r5",
+     "t": "2026-11-25T01:44:20+00:00",
+     "ok": true,
+     "ops": 378918.0,
+     "avg_ms": 0.111,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.199,
+     "server_ops": 377292.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.sscan.P1",
+   "family": "set commands",
+   "command": "sscan",
+   "command_line": "SSCAN set:a:000000000000 0 COUNT 10",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 23289.9,
+     "min": 23066.5,
+     "max": 23679.0,
+     "cv": 0.00944314
+    },
+    "avg_ms": {
+     "median": 1.178,
+     "min": 1.164,
+     "max": 1.183,
+     "cv": 0.00591583
+    },
+    "p50_ms": {
+     "median": 1.167,
+     "min": 1.151,
+     "max": 1.175,
+     "cv": 0.00800543
+    },
+    "p95_ms": {
+     "median": 1.335,
+     "min": 1.319,
+     "max": 1.343,
+     "cv": 0.00656447
+    },
+    "p99_ms": {
+     "median": 1.431,
+     "min": 1.423,
+     "max": 1.439,
+     "cv": 0.00417887
+    },
+    "server_ops": {
+     "median": 23293.2,
+     "min": 23067.8,
+     "max": 23675.7,
+     "cv": 0.00924504
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p16.intset512.sscan.r1",
+     "t": "2026-11-25T01:45:27+00:00",
+     "ok": true,
+     "ops": 23679.0,
+     "avg_ms": 1.164,
+     "p50_ms": 1.151,
+     "p95_ms": 1.319,
+     "p99_ms": 1.423,
+     "server_ops": 23675.7
+    },
+    {
+     "rep": 2,
+     "pair": "p16.intset512.sscan.r2",
+     "t": "2026-11-25T01:47:23+00:00",
+     "ok": true,
+     "ops": 23168.1,
+     "avg_ms": 1.183,
+     "p50_ms": 1.175,
+     "p95_ms": 1.343,
+     "p99_ms": 1.439,
+     "server_ops": 23189.7
+    },
+    {
+     "rep": 3,
+     "pair": "p16.intset512.sscan.r3",
+     "t": "2026-11-25T01:48:13+00:00",
+     "ok": true,
+     "ops": 23066.5,
+     "avg_ms": 1.182,
+     "p50_ms": 1.175,
+     "p95_ms": 1.343,
+     "p99_ms": 1.439,
+     "server_ops": 23067.8
+    },
+    {
+     "rep": 4,
+     "pair": "p16.intset512.sscan.r4",
+     "t": "2026-11-25T01:49:36+00:00",
+     "ok": true,
+     "ops": 23485.2,
+     "avg_ms": 1.173,
+     "p50_ms": 1.159,
+     "p95_ms": 1.335,
+     "p99_ms": 1.431,
+     "server_ops": 23486.0
+    },
+    {
+     "rep": 5,
+     "pair": "p16.intset512.sscan.r5",
+     "t": "2026-11-25T01:52:39+00:00",
+     "ok": true,
+     "ops": 23289.9,
+     "avg_ms": 1.178,
+     "p50_ms": 1.167,
+     "p95_ms": 1.335,
+     "p99_ms": 1.431,
+     "server_ops": 23293.2
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.sinterstore.P1",
+   "family": "set commands",
+   "command": "sinterstore",
+   "command_line": "SINTERSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 74.89,
+     "min": 73.32,
+     "max": 75.31,
+     "cv": 0.00952832
+    },
+    "avg_ms": {
+     "median": 654.024,
+     "min": 650.323,
+     "max": 668.04,
+     "cv": 0.00964854
+    },
+    "p50_ms": {
+     "median": 667.135,
+     "min": 663.551,
+     "max": 674.815,
+     "cv": 0.00594717
+    },
+    "p95_ms": {
+     "median": 676.863,
+     "min": 669.183,
+     "max": 735.231,
+     "cv": 0.0360634
+    },
+    "p99_ms": {
+     "median": 719.871,
+     "min": 676.863,
+     "max": 774.143,
+     "cv": 0.053751
+    },
+    "server_ops": {
+     "median": 74.81,
+     "min": 73.5,
+     "max": 75.27,
+     "cv": 0.0086018
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p11.hashtable100k.sinterstore.r1",
+     "t": "2026-11-25T01:37:02+00:00",
+     "ok": true,
+     "ops": 74.89,
+     "avg_ms": 654.024,
+     "p50_ms": 667.135,
+     "p95_ms": 676.863,
+     "p99_ms": 774.143,
+     "server_ops": 74.81
+    },
+    {
+     "rep": 2,
+     "pair": "p11.hashtable100k.sinterstore.r2",
+     "t": "2026-11-25T01:39:06+00:00",
+     "ok": true,
+     "ops": 75.31,
+     "avg_ms": 650.323,
+     "p50_ms": 663.551,
+     "p95_ms": 669.695,
+     "p99_ms": 676.863,
+     "server_ops": 75.27
+    },
+    {
+     "rep": 3,
+     "pair": "p11.hashtable100k.sinterstore.r3",
+     "t": "2026-11-25T01:39:58+00:00",
+     "ok": true,
+     "ops": 73.32,
+     "avg_ms": 668.04,
+     "p50_ms": 674.815,
+     "p95_ms": 735.231,
+     "p99_ms": 751.103,
+     "server_ops": 73.5
+    },
+    {
+     "rep": 4,
+     "pair": "p11.hashtable100k.sinterstore.r4",
+     "t": "2026-11-25T01:41:26+00:00",
+     "ok": true,
+     "ops": 75.17,
+     "avg_ms": 651.616,
+     "p50_ms": 664.575,
+     "p95_ms": 669.183,
+     "p99_ms": 678.399,
+     "server_ops": 75.21
+    },
+    {
+     "rep": 5,
+     "pair": "p11.hashtable100k.sinterstore.r5",
+     "t": "2026-11-25T01:44:40+00:00",
+     "ok": true,
+     "ops": 74.65,
+     "avg_ms": 656.054,
+     "p50_ms": 668.671,
+     "p95_ms": 695.295,
+     "p99_ms": 719.871,
+     "server_ops": 74.52
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.sdiff.P1",
+   "family": "set commands",
+   "command": "sdiff",
+   "command_line": "SDIFF set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 15829.8,
+     "min": 15788.4,
+     "max": 15867.3,
+     "cv": 0.00194254
+    },
+    "avg_ms": {
+     "median": 3.153,
+     "min": 3.145,
+     "max": 3.161,
+     "cv": 0.00201164
+    },
+    "p50_ms": {
+     "median": 3.151,
+     "min": 3.143,
+     "max": 3.159,
+     "cv": 0.00227084
+    },
+    "p95_ms": {
+     "median": 3.223,
+     "min": 3.207,
+     "max": 3.279,
+     "cv": 0.00789614
+    },
+    "p99_ms": {
+     "median": 3.287,
+     "min": 3.279,
+     "max": 3.367,
+     "cv": 0.01024
+    },
+    "server_ops": {
+     "median": 15829.1,
+     "min": 15785.1,
+     "max": 15871.3,
+     "cv": 0.00205704
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p11.listpack128.sdiff.r1",
+     "t": "2026-11-25T01:45:47+00:00",
+     "ok": true,
+     "ops": 15791.8,
+     "avg_ms": 3.16,
+     "p50_ms": 3.159,
+     "p95_ms": 3.223,
+     "p99_ms": 3.287,
+     "server_ops": 15793.1
+    },
+    {
+     "rep": 2,
+     "pair": "p11.listpack128.sdiff.r2",
+     "t": "2026-11-25T01:47:43+00:00",
+     "ok": true,
+     "ops": 15829.8,
+     "avg_ms": 3.153,
+     "p50_ms": 3.151,
+     "p95_ms": 3.215,
+     "p99_ms": 3.279,
+     "server_ops": 15829.1
+    },
+    {
+     "rep": 3,
+     "pair": "p11.listpack128.sdiff.r3",
+     "t": "2026-11-25T01:48:33+00:00",
+     "ok": true,
+     "ops": 15846.7,
+     "avg_ms": 3.148,
+     "p50_ms": 3.143,
+     "p95_ms": 3.279,
+     "p99_ms": 3.367,
+     "server_ops": 15848.0
+    },
+    {
+     "rep": 4,
+     "pair": "p11.listpack128.sdiff.r4",
+     "t": "2026-11-25T01:49:56+00:00",
+     "ok": true,
+     "ops": 15788.4,
+     "avg_ms": 3.161,
+     "p50_ms": 3.159,
+     "p95_ms": 3.223,
+     "p99_ms": 3.287,
+     "server_ops": 15785.1
+    },
+    {
+     "rep": 5,
+     "pair": "p11.listpack128.sdiff.r5",
+     "t": "2026-11-25T01:52:59+00:00",
+     "ok": true,
+     "ops": 15867.3,
+     "avg_ms": 3.145,
+     "p50_ms": 3.143,
+     "p95_ms": 3.207,
+     "p99_ms": 3.279,
+     "server_ops": 15871.3
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.sdiff.P1",
+   "family": "set commands",
+   "command": "sdiff",
+   "command_line": "SDIFF set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 55.47,
+     "min": 54.93,
+     "max": 57.31,
+     "cv": 0.0174835
+    },
+    "avg_ms": {
+     "median": 338.212,
+     "min": 320.487,
+     "max": 344.761,
+     "cv": 0.0320166
+    },
+    "p50_ms": {
+     "median": 318.463,
+     "min": 293.887,
+     "max": 329.727,
+     "cv": 0.0476374
+    },
+    "p95_ms": {
+     "median": 685.567,
+     "min": 654.847,
+     "max": 700.927,
+     "cv": 0.027499
+    },
+    "p99_ms": {
+     "median": 738.303,
+     "min": 705.535,
+     "max": 749.055,
+     "cv": 0.0240288
+    },
+    "server_ops": {
+     "median": 58.62,
+     "min": 57.87,
+     "max": 60.67,
+     "cv": 0.0190669
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p13.hashtable100k.sdiff.r1",
+     "t": "2026-11-25T01:37:01+00:00",
+     "ok": true,
+     "ops": 54.93,
+     "avg_ms": 344.761,
+     "p50_ms": 329.727,
+     "p95_ms": 700.927,
+     "p99_ms": 749.055,
+     "server_ops": 58.62
+    },
+    {
+     "rep": 2,
+     "pair": "p13.hashtable100k.sdiff.r2",
+     "t": "2026-11-25T01:39:00+00:00",
+     "ok": true,
+     "ops": 57.31,
+     "avg_ms": 320.487,
+     "p50_ms": 299.775,
+     "p95_ms": 654.847,
+     "p99_ms": 705.535,
+     "server_ops": 60.0
+    },
+    {
+     "rep": 3,
+     "pair": "p13.hashtable100k.sdiff.r3",
+     "t": "2026-11-25T01:39:51+00:00",
+     "ok": true,
+     "ops": 55.1,
+     "avg_ms": 343.343,
+     "p50_ms": 329.727,
+     "p95_ms": 694.271,
+     "p99_ms": 744.447,
+     "server_ops": 57.87
+    },
+    {
+     "rep": 4,
+     "pair": "p13.hashtable100k.sdiff.r4",
+     "t": "2026-11-25T01:41:17+00:00",
+     "ok": true,
+     "ops": 55.47,
+     "avg_ms": 338.212,
+     "p50_ms": 318.463,
+     "p95_ms": 685.567,
+     "p99_ms": 738.303,
+     "server_ops": 57.94
+    },
+    {
+     "rep": 5,
+     "pair": "p13.hashtable100k.sdiff.r5",
+     "t": "2026-11-25T01:44:25+00:00",
+     "ok": true,
+     "ops": 56.92,
+     "avg_ms": 321.047,
+     "p50_ms": 293.887,
+     "p95_ms": 658.943,
+     "p99_ms": 712.703,
+     "server_ops": 60.67
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.srem_sadd.P1",
+   "family": "set commands",
+   "command": "srem_sadd",
+   "command_line": "SREM set:a:000000000000 txxx__rand_int__ | SADD set:a:000000000000 txxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 376720.0,
+     "min": 372987.0,
+     "max": 377670.0,
+     "cv": 0.00455842
+    },
+    "avg_ms": {
+     "median": 0.112,
+     "min": 0.111,
+     "max": 0.113,
+     "cv": 0.00669348
+    },
+    "p50_ms": {
+     "median": 0.111,
+     "min": 0.111,
+     "max": 0.111,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.167,
+     "min": 0.167,
+     "max": 0.167,
+     "cv": 0.0
+    },
+    "p99_ms": {
+     "median": 0.191,
+     "min": 0.191,
+     "max": 0.199,
+     "cv": 0.0166147
+    },
+    "server_ops": {
+     "median": 375497.0,
+     "min": 371043.0,
+     "max": 377452.0,
+     "cv": 0.00636934
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p13.listpack128.srem_sadd.r1",
+     "t": "2026-11-25T01:45:32+00:00",
+     "ok": true,
+     "ops": 377367.0,
+     "avg_ms": 0.111,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 374004.0
+    },
+    {
+     "rep": 2,
+     "pair": "p13.listpack128.srem_sadd.r2",
+     "t": "2026-11-25T01:47:28+00:00",
+     "ok": true,
+     "ops": 377670.0,
+     "avg_ms": 0.112,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 377378.0
+    },
+    {
+     "rep": 3,
+     "pair": "p13.listpack128.srem_sadd.r3",
+     "t": "2026-11-25T01:48:17+00:00",
+     "ok": true,
+     "ops": 376720.0,
+     "avg_ms": 0.113,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.199,
+     "server_ops": 377452.0
+    },
+    {
+     "rep": 4,
+     "pair": "p13.listpack128.srem_sadd.r4",
+     "t": "2026-11-25T01:49:40+00:00",
+     "ok": true,
+     "ops": 375339.0,
+     "avg_ms": 0.111,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 375497.0
+    },
+    {
+     "rep": 5,
+     "pair": "p13.listpack128.srem_sadd.r5",
+     "t": "2026-11-25T01:52:43+00:00",
+     "ok": true,
+     "ops": 372987.0,
+     "avg_ms": 0.112,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 371043.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.sunion.P1",
+   "family": "set commands",
+   "command": "sunion",
+   "command_line": "SUNION set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 22.23,
+     "min": 21.9,
+     "max": 23.31,
+     "cv": 0.0220794
+    },
+    "avg_ms": {
+     "median": 717.805,
+     "min": 664.377,
+     "max": 744.03,
+     "cv": 0.0369537
+    },
+    "p50_ms": {
+     "median": 680.447,
+     "min": 610.815,
+     "max": 723.455,
+     "cv": 0.0539345
+    },
+    "p95_ms": {
+     "median": 1463.3,
+     "min": 1406.97,
+     "max": 1475.58,
+     "cv": 0.0174746
+    },
+    "p99_ms": {
+     "median": 1623.04,
+     "min": 1615.87,
+     "max": 1657.86,
+     "cv": 0.0109335
+    },
+    "server_ops": {
+     "median": 25.22,
+     "min": 25.01,
+     "max": 25.86,
+     "cv": 0.0119272
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p10.hashtable100k.sunion.r1",
+     "t": "2026-11-25T01:37:02+00:00",
+     "ok": true,
+     "ops": 21.9,
+     "avg_ms": 723.733,
+     "p50_ms": 684.543,
+     "p95_ms": 1444.86,
+     "p99_ms": 1618.94,
+     "server_ops": 25.22
+    },
+    {
+     "rep": 2,
+     "pair": "p10.hashtable100k.sunion.r2",
+     "t": "2026-11-25T01:39:06+00:00",
+     "ok": true,
+     "ops": 23.31,
+     "avg_ms": 664.377,
+     "p50_ms": 610.815,
+     "p95_ms": 1406.97,
+     "p99_ms": 1652.73,
+     "server_ops": 25.86
+    },
+    {
+     "rep": 3,
+     "pair": "p10.hashtable100k.sunion.r3",
+     "t": "2026-11-25T01:39:59+00:00",
+     "ok": true,
+     "ops": 22.06,
+     "avg_ms": 744.03,
+     "p50_ms": 723.455,
+     "p95_ms": 1463.3,
+     "p99_ms": 1615.87,
+     "server_ops": 25.01
+    },
+    {
+     "rep": 4,
+     "pair": "p10.hashtable100k.sunion.r4",
+     "t": "2026-11-25T01:41:26+00:00",
+     "ok": true,
+     "ops": 22.41,
+     "avg_ms": 715.63,
+     "p50_ms": 670.207,
+     "p95_ms": 1475.58,
+     "p99_ms": 1657.86,
+     "server_ops": 25.42
+    },
+    {
+     "rep": 5,
+     "pair": "p10.hashtable100k.sunion.r5",
+     "t": "2026-11-25T01:44:39+00:00",
+     "ok": true,
+     "ops": 22.23,
+     "avg_ms": 717.805,
+     "p50_ms": 680.447,
+     "p95_ms": 1473.54,
+     "p99_ms": 1623.04,
+     "server_ops": 25.1
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.sadd_existing.P1",
+   "family": "set commands",
+   "command": "sadd_existing",
+   "command_line": "SADD set:a:000000000000 1__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 203702.0,
+     "min": 196712.0,
+     "max": 206226.0,
+     "cv": 0.0200926
+    },
+    "avg_ms": {
+     "median": 0.169,
+     "min": 0.166,
+     "max": 0.173,
+     "cv": 0.0161017
+    },
+    "p50_ms": {
+     "median": 0.167,
+     "min": 0.167,
+     "max": 0.175,
+     "cv": 0.0230269
+    },
+    "p95_ms": {
+     "median": 0.207,
+     "min": 0.207,
+     "max": 0.215,
+     "cv": 0.018645
+    },
+    "p99_ms": {
+     "median": 0.247,
+     "min": 0.247,
+     "max": 0.287,
+     "cv": 0.0634065
+    },
+    "server_ops": {
+     "median": 203657.0,
+     "min": 196742.0,
+     "max": 206221.0,
+     "cv": 0.0200333
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p10.intset512.sadd_existing.r1",
+     "t": "2026-11-25T01:45:46+00:00",
+     "ok": true,
+     "ops": 206124.0,
+     "avg_ms": 0.166,
+     "p50_ms": 0.167,
+     "p95_ms": 0.207,
+     "p99_ms": 0.247,
+     "server_ops": 206116.0
+    },
+    {
+     "rep": 2,
+     "pair": "p10.intset512.sadd_existing.r2",
+     "t": "2026-11-25T01:47:43+00:00",
+     "ok": true,
+     "ops": 197897.0,
+     "avg_ms": 0.172,
+     "p50_ms": 0.175,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 197888.0
+    },
+    {
+     "rep": 3,
+     "pair": "p10.intset512.sadd_existing.r3",
+     "t": "2026-11-25T01:48:32+00:00",
+     "ok": true,
+     "ops": 203702.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.167,
+     "p95_ms": 0.207,
+     "p99_ms": 0.247,
+     "server_ops": 203657.0
+    },
+    {
+     "rep": 4,
+     "pair": "p10.intset512.sadd_existing.r4",
+     "t": "2026-11-25T01:49:55+00:00",
+     "ok": true,
+     "ops": 196712.0,
+     "avg_ms": 0.173,
+     "p50_ms": 0.175,
+     "p95_ms": 0.215,
+     "p99_ms": 0.287,
+     "server_ops": 196742.0
+    },
+    {
+     "rep": 5,
+     "pair": "p10.intset512.sadd_existing.r5",
+     "t": "2026-11-25T01:52:58+00:00",
+     "ok": true,
+     "ops": 206226.0,
+     "avg_ms": 0.167,
+     "p50_ms": 0.167,
+     "p95_ms": 0.207,
+     "p99_ms": 0.247,
+     "server_ops": 206221.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.sunionstore.P1",
+   "family": "set commands",
+   "command": "sunionstore",
+   "command_line": "SUNIONSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 36.77,
+     "min": 36.76,
+     "max": 36.87,
+     "cv": 0.0011086
+    },
+    "avg_ms": {
+     "median": 1302.86,
+     "min": 1299.62,
+     "max": 1303.39,
+     "cv": 0.00106422
+    },
+    "p50_ms": {
+     "median": 1362.94,
+     "min": 1360.89,
+     "max": 1362.94,
+     "cv": 0.000601546
+    },
+    "p95_ms": {
+     "median": 1372.16,
+     "min": 1368.06,
+     "max": 1420.29,
+     "cv": 0.0143712
+    },
+    "p99_ms": {
+     "median": 1689.6,
+     "min": 1372.16,
+     "max": 2004.99,
+     "cv": 0.152822
+    },
+    "server_ops": {
+     "median": 36.66,
+     "min": 36.64,
+     "max": 36.72,
+     "cv": 0.000759703
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p9.hashtable100k.sunionstore.r1",
+     "t": "2026-11-25T01:37:05+00:00",
+     "ok": true,
+     "ops": 36.87,
+     "avg_ms": 1299.62,
+     "p50_ms": 1360.89,
+     "p95_ms": 1368.06,
+     "p99_ms": 1961.98,
+     "server_ops": 36.72
+    },
+    {
+     "rep": 2,
+     "pair": "p9.hashtable100k.sunionstore.r2",
+     "t": "2026-11-25T01:39:13+00:00",
+     "ok": true,
+     "ops": 36.77,
+     "avg_ms": 1302.86,
+     "p50_ms": 1361.92,
+     "p95_ms": 1373.18,
+     "p99_ms": 2004.99,
+     "server_ops": 36.67
+    },
+    {
+     "rep": 3,
+     "pair": "p9.hashtable100k.sunionstore.r3",
+     "t": "2026-11-25T01:40:07+00:00",
+     "ok": true,
+     "ops": 36.76,
+     "avg_ms": 1303.39,
+     "p50_ms": 1362.94,
+     "p95_ms": 1420.29,
+     "p99_ms": 1442.82,
+     "server_ops": 36.65
+    },
+    {
+     "rep": 4,
+     "pair": "p9.hashtable100k.sunionstore.r4",
+     "t": "2026-11-25T01:41:39+00:00",
+     "ok": true,
+     "ops": 36.77,
+     "avg_ms": 1303.09,
+     "p50_ms": 1362.94,
+     "p95_ms": 1370.11,
+     "p99_ms": 1372.16,
+     "server_ops": 36.66
+    },
+    {
+     "rep": 5,
+     "pair": "p9.hashtable100k.sunionstore.r5",
+     "t": "2026-11-25T01:45:01+00:00",
+     "ok": true,
+     "ops": 36.81,
+     "avg_ms": 1301.62,
+     "p50_ms": 1362.94,
+     "p95_ms": 1372.16,
+     "p99_ms": 1689.6,
+     "server_ops": 36.64
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.srandmember.P1",
+   "family": "set commands",
+   "command": "srandmember",
+   "command_line": "SRANDMEMBER set:a:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 207224.0,
+     "min": 204681.0,
+     "max": 210428.0,
+     "cv": 0.00913456
+    },
+    "avg_ms": {
+     "median": 0.166,
+     "min": 0.164,
+     "max": 0.167,
+     "cv": 0.00703372
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.151,
+     "max": 0.159,
+     "cv": 0.0251552
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0147738
+    },
+    "p99_ms": {
+     "median": 0.255,
+     "min": 0.255,
+     "max": 0.311,
+     "cv": 0.0813818
+    },
+    "server_ops": {
+     "median": 207292.0,
+     "min": 204620.0,
+     "max": 210312.0,
+     "cv": 0.00929042
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p9.intset512.srandmember.r1",
+     "t": "2026-11-25T01:46:09+00:00",
+     "ok": true,
+     "ops": 210428.0,
+     "avg_ms": 0.164,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.311,
+     "server_ops": 210312.0
+    },
+    {
+     "rep": 2,
+     "pair": "p9.intset512.srandmember.r2",
+     "t": "2026-11-25T01:48:05+00:00",
+     "ok": true,
+     "ops": 207550.0,
+     "avg_ms": 0.165,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 208225.0
+    },
+    {
+     "rep": 3,
+     "pair": "p9.intset512.srandmember.r3",
+     "t": "2026-11-25T01:48:55+00:00",
+     "ok": true,
+     "ops": 207224.0,
+     "avg_ms": 0.166,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 207292.0
+    },
+    {
+     "rep": 4,
+     "pair": "p9.intset512.srandmember.r4",
+     "t": "2026-11-25T01:50:18+00:00",
+     "ok": true,
+     "ops": 204681.0,
+     "avg_ms": 0.167,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 204620.0
+    },
+    {
+     "rep": 5,
+     "pair": "p9.intset512.srandmember.r5",
+     "t": "2026-11-25T01:53:21+00:00",
+     "ok": true,
+     "ops": 206187.0,
+     "avg_ms": 0.167,
+     "p50_ms": 0.159,
+     "p95_ms": 0.223,
+     "p99_ms": 0.279,
+     "server_ops": 206101.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.sinter.P1",
+   "family": "set commands",
+   "command": "sinter",
+   "command_line": "SINTER set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 89.06,
+     "min": 86.15,
+     "max": 92.14,
+     "cv": 0.0220986
+    },
+    "avg_ms": {
+     "median": 186.013,
+     "min": 172.443,
+     "max": 194.74,
+     "cv": 0.0392185
+    },
+    "p50_ms": {
+     "median": 166.783,
+     "min": 154.367,
+     "max": 183.039,
+     "cv": 0.0550647
+    },
+    "p95_ms": {
+     "median": 387.071,
+     "min": 358.911,
+     "max": 398.591,
+     "cv": 0.0372672
+    },
+    "p99_ms": {
+     "median": 425.215,
+     "min": 402.687,
+     "max": 476.159,
+     "cv": 0.0569237
+    },
+    "server_ops": {
+     "median": 90.65,
+     "min": 89.09,
+     "max": 94.86,
+     "cv": 0.0219288
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p14.hashtable100k.sinter.r1",
+     "t": "2026-11-25T01:37:01+00:00",
+     "ok": true,
+     "ops": 89.06,
+     "avg_ms": 194.74,
+     "p50_ms": 183.039,
+     "p95_ms": 397.823,
+     "p99_ms": 443.391,
+     "server_ops": 89.09
+    },
+    {
+     "rep": 2,
+     "pair": "p14.hashtable100k.sinter.r2",
+     "t": "2026-11-25T01:39:03+00:00",
+     "ok": true,
+     "ops": 87.82,
+     "avg_ms": 186.013,
+     "p50_ms": 168.831,
+     "p95_ms": 386.815,
+     "p99_ms": 422.655,
+     "server_ops": 90.56
+    },
+    {
+     "rep": 3,
+     "pair": "p14.hashtable100k.sinter.r3",
+     "t": "2026-11-25T01:39:54+00:00",
+     "ok": true,
+     "ops": 89.09,
+     "avg_ms": 184.431,
+     "p50_ms": 164.479,
+     "p95_ms": 387.071,
+     "p99_ms": 425.215,
+     "server_ops": 90.65
+    },
+    {
+     "rep": 4,
+     "pair": "p14.hashtable100k.sinter.r4",
+     "t": "2026-11-25T01:41:21+00:00",
+     "ok": true,
+     "ops": 92.14,
+     "avg_ms": 172.443,
+     "p50_ms": 154.367,
+     "p95_ms": 358.911,
+     "p99_ms": 402.687,
+     "server_ops": 94.86
+    },
+    {
+     "rep": 5,
+     "pair": "p14.hashtable100k.sinter.r5",
+     "t": "2026-11-25T01:44:31+00:00",
+     "ok": true,
+     "ops": 86.15,
+     "avg_ms": 188.141,
+     "p50_ms": 166.783,
+     "p95_ms": 398.591,
+     "p99_ms": 476.159,
+     "server_ops": 92.72
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.smembers.P1",
+   "family": "set commands",
+   "command": "smembers",
+   "command_line": "SMEMBERS set:a:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 168148.0,
+     "min": 165853.0,
+     "max": 169069.0,
+     "cv": 0.00761623
+    },
+    "avg_ms": {
+     "median": 0.195,
+     "min": 0.193,
+     "max": 0.197,
+     "cv": 0.00681032
+    },
+    "p50_ms": {
+     "median": 0.183,
+     "min": 0.183,
+     "max": 0.191,
+     "cv": 0.0173348
+    },
+    "p95_ms": {
+     "median": 0.255,
+     "min": 0.247,
+     "max": 0.255,
+     "cv": 0.0155647
+    },
+    "p99_ms": {
+     "median": 0.311,
+     "min": 0.295,
+     "max": 0.367,
+     "cv": 0.0793048
+    },
+    "server_ops": {
+     "median": 168312.0,
+     "min": 165759.0,
+     "max": 169003.0,
+     "cv": 0.0077542
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p14.listpack16.smembers.r1",
+     "t": "2026-11-25T01:45:38+00:00",
+     "ok": true,
+     "ops": 165853.0,
+     "avg_ms": 0.197,
+     "p50_ms": 0.191,
+     "p95_ms": 0.255,
+     "p99_ms": 0.311,
+     "server_ops": 165759.0
+    },
+    {
+     "rep": 2,
+     "pair": "p14.listpack16.smembers.r2",
+     "t": "2026-11-25T01:47:34+00:00",
+     "ok": true,
+     "ops": 168148.0,
+     "avg_ms": 0.195,
+     "p50_ms": 0.183,
+     "p95_ms": 0.255,
+     "p99_ms": 0.367,
+     "server_ops": 168312.0
+    },
+    {
+     "rep": 3,
+     "pair": "p14.listpack16.smembers.r3",
+     "t": "2026-11-25T01:48:24+00:00",
+     "ok": true,
+     "ops": 169069.0,
+     "avg_ms": 0.193,
+     "p50_ms": 0.183,
+     "p95_ms": 0.247,
+     "p99_ms": 0.319,
+     "server_ops": 169003.0
+    },
+    {
+     "rep": 4,
+     "pair": "p14.listpack16.smembers.r4",
+     "t": "2026-11-25T01:49:47+00:00",
+     "ok": true,
+     "ops": 168586.0,
+     "avg_ms": 0.194,
+     "p50_ms": 0.183,
+     "p95_ms": 0.247,
+     "p99_ms": 0.303,
+     "server_ops": 168599.0
+    },
+    {
+     "rep": 5,
+     "pair": "p14.listpack16.smembers.r5",
+     "t": "2026-11-25T01:52:50+00:00",
+     "ok": true,
+     "ops": 166310.0,
+     "avg_ms": 0.195,
+     "p50_ms": 0.183,
+     "p95_ms": 0.255,
+     "p99_ms": 0.295,
+     "server_ops": 166342.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.sdiffstore.P1",
+   "family": "set commands",
+   "command": "sdiffstore",
+   "command_line": "SDIFFSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 75.15,
+     "min": 73.39,
+     "max": 75.56,
+     "cv": 0.0113138
+    },
+    "avg_ms": {
+     "median": 651.826,
+     "min": 648.357,
+     "max": 667.038,
+     "cv": 0.0111228
+    },
+    "p50_ms": {
+     "median": 663.551,
+     "min": 659.967,
+     "max": 676.863,
+     "cv": 0.0104246
+    },
+    "p95_ms": {
+     "median": 680.959,
+     "min": 666.111,
+     "max": 707.583,
+     "cv": 0.0220163
+    },
+    "p99_ms": {
+     "median": 692.735,
+     "min": 669.183,
+     "max": 728.575,
+     "cv": 0.0291653
+    },
+    "server_ops": {
+     "median": 74.94,
+     "min": 73.23,
+     "max": 75.6,
+     "cv": 0.0115715
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p12.hashtable100k.sdiffstore.r1",
+     "t": "2026-11-25T01:37:02+00:00",
+     "ok": true,
+     "ops": 75.15,
+     "avg_ms": 651.826,
+     "p50_ms": 663.551,
+     "p95_ms": 680.959,
+     "p99_ms": 714.239,
+     "server_ops": 74.94
+    },
+    {
+     "rep": 2,
+     "pair": "p12.hashtable100k.sdiffstore.r2",
+     "t": "2026-11-25T01:39:05+00:00",
+     "ok": true,
+     "ops": 75.56,
+     "avg_ms": 648.357,
+     "p50_ms": 661.503,
+     "p95_ms": 666.111,
+     "p99_ms": 669.183,
+     "server_ops": 75.5
+    },
+    {
+     "rep": 3,
+     "pair": "p12.hashtable100k.sdiffstore.r3",
+     "t": "2026-11-25T01:39:58+00:00",
+     "ok": true,
+     "ops": 73.39,
+     "avg_ms": 667.038,
+     "p50_ms": 676.863,
+     "p95_ms": 707.583,
+     "p99_ms": 728.575,
+     "server_ops": 73.23
+    },
+    {
+     "rep": 4,
+     "pair": "p12.hashtable100k.sdiffstore.r4",
+     "t": "2026-11-25T01:41:26+00:00",
+     "ok": true,
+     "ops": 74.16,
+     "avg_ms": 660.113,
+     "p50_ms": 674.303,
+     "p95_ms": 685.567,
+     "p99_ms": 692.223,
+     "server_ops": 74.42
+    },
+    {
+     "rep": 5,
+     "pair": "p12.hashtable100k.sdiffstore.r5",
+     "t": "2026-11-25T01:44:39+00:00",
+     "ok": true,
+     "ops": 75.5,
+     "avg_ms": 648.638,
+     "p50_ms": 659.967,
+     "p95_ms": 667.647,
+     "p99_ms": 692.735,
+     "server_ops": 75.6
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.sscan.P1",
+   "family": "set commands",
+   "command": "sscan",
+   "command_line": "SSCAN set:a:000000000000 0 COUNT 10",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 67753.6,
+     "min": 67403.6,
+     "max": 68269.0,
+     "cv": 0.0047682
+    },
+    "avg_ms": {
+     "median": 0.42,
+     "min": 0.419,
+     "max": 0.426,
+     "cv": 0.00778752
+    },
+    "p50_ms": {
+     "median": 0.415,
+     "min": 0.407,
+     "max": 0.415,
+     "cv": 0.00774069
+    },
+    "p95_ms": {
+     "median": 0.519,
+     "min": 0.511,
+     "max": 0.527,
+     "cv": 0.0137869
+    },
+    "p99_ms": {
+     "median": 0.703,
+     "min": 0.695,
+     "max": 0.719,
+     "cv": 0.0115526
+    },
+    "server_ops": {
+     "median": 67801.9,
+     "min": 67438.6,
+     "max": 68283.6,
+     "cv": 0.0045729
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p12.listpack128.sscan.r1",
+     "t": "2026-11-25T01:45:46+00:00",
+     "ok": true,
+     "ops": 68017.6,
+     "avg_ms": 0.426,
+     "p50_ms": 0.415,
+     "p95_ms": 0.527,
+     "p99_ms": 0.719,
+     "server_ops": 68010.1
+    },
+    {
+     "rep": 2,
+     "pair": "p12.listpack128.sscan.r2",
+     "t": "2026-11-25T01:47:42+00:00",
+     "ok": true,
+     "ops": 67403.6,
+     "avg_ms": 0.419,
+     "p50_ms": 0.415,
+     "p95_ms": 0.511,
+     "p99_ms": 0.703,
+     "server_ops": 67438.6
+    },
+    {
+     "rep": 3,
+     "pair": "p12.listpack128.sscan.r3",
+     "t": "2026-11-25T01:48:32+00:00",
+     "ok": true,
+     "ops": 68269.0,
+     "avg_ms": 0.42,
+     "p50_ms": 0.415,
+     "p95_ms": 0.511,
+     "p99_ms": 0.695,
+     "server_ops": 68283.6
+    },
+    {
+     "rep": 4,
+     "pair": "p12.listpack128.sscan.r4",
+     "t": "2026-11-25T01:49:55+00:00",
+     "ok": true,
+     "ops": 67489.1,
+     "avg_ms": 0.426,
+     "p50_ms": 0.415,
+     "p95_ms": 0.527,
+     "p99_ms": 0.703,
+     "server_ops": 67529.8
+    },
+    {
+     "rep": 5,
+     "pair": "p12.listpack128.sscan.r5",
+     "t": "2026-11-25T01:52:57+00:00",
+     "ok": true,
+     "ops": 67753.6,
+     "avg_ms": 0.419,
+     "p50_ms": 0.407,
+     "p95_ms": 0.519,
+     "p99_ms": 0.711,
+     "server_ops": 67801.9
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.smembers.P1",
+   "family": "set commands",
+   "command": "smembers",
+   "command_line": "SMEMBERS set:a:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 93.58,
+     "min": 91.56,
+     "max": 99.92,
+     "cv": 0.0299573
+    },
+    "avg_ms": {
+     "median": 101.751,
+     "min": 85.154,
+     "max": 105.243,
+     "cv": 0.0740767
+    },
+    "p50_ms": {
+     "median": 96.959,
+     "min": 80.063,
+     "max": 100.863,
+     "cv": 0.0788702
+    },
+    "p95_ms": {
+     "median": 203.903,
+     "min": 166.143,
+     "max": 213.631,
+     "cv": 0.0847687
+    },
+    "p99_ms": {
+     "median": 270.847,
+     "min": 260.863,
+     "max": 271.615,
+     "cv": 0.0150651
+    },
+    "server_ops": {
+     "median": 97.98,
+     "min": 96.8,
+     "max": 102.15,
+     "cv": 0.0192003
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p17.hashtable100k.smembers.r1",
+     "t": "2026-11-25T01:37:14+00:00",
+     "ok": true,
+     "ops": 93.37,
+     "avg_ms": 101.751,
+     "p50_ms": 96.959,
+     "p95_ms": 203.903,
+     "p99_ms": 270.847,
+     "server_ops": 97.34
+    },
+    {
+     "rep": 2,
+     "pair": "p17.hashtable100k.smembers.r2",
+     "t": "2026-11-25T01:39:13+00:00",
+     "ok": true,
+     "ops": 93.58,
+     "avg_ms": 105.243,
+     "p50_ms": 99.199,
+     "p95_ms": 208.895,
+     "p99_ms": 267.263,
+     "server_ops": 96.8
+    },
+    {
+     "rep": 3,
+     "pair": "p17.hashtable100k.smembers.r3",
+     "t": "2026-11-25T01:40:04+00:00",
+     "ok": true,
+     "ops": 91.56,
+     "avg_ms": 104.632,
+     "p50_ms": 100.863,
+     "p95_ms": 213.631,
+     "p99_ms": 271.615,
+     "server_ops": 97.98
+    },
+    {
+     "rep": 4,
+     "pair": "p17.hashtable100k.smembers.r4",
+     "t": "2026-11-25T01:41:28+00:00",
+     "ok": true,
+     "ops": 95.02,
+     "avg_ms": 100.681,
+     "p50_ms": 94.911,
+     "p95_ms": 199.167,
+     "p99_ms": 271.103,
+     "server_ops": 98.26
+    },
+    {
+     "rep": 5,
+     "pair": "p17.hashtable100k.smembers.r5",
+     "t": "2026-11-25T01:44:35+00:00",
+     "ok": true,
+     "ops": 99.92,
+     "avg_ms": 85.154,
+     "p50_ms": 80.063,
+     "p95_ms": 166.143,
+     "p99_ms": 260.863,
+     "server_ops": 102.15
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.sdiffstore.P1",
+   "family": "set commands",
+   "command": "sdiffstore",
+   "command_line": "SDIFFSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 55062.6,
+     "min": 54662.8,
+     "max": 55317.6,
+     "cv": 0.00424423
+    },
+    "avg_ms": {
+     "median": 0.902,
+     "min": 0.898,
+     "max": 0.909,
+     "cv": 0.00448968
+    },
+    "p50_ms": {
+     "median": 0.895,
+     "min": 0.895,
+     "max": 0.903,
+     "cv": 0.00356904
+    },
+    "p95_ms": {
+     "median": 1.063,
+     "min": 1.063,
+     "max": 1.071,
+     "cv": 0.00367584
+    },
+    "p99_ms": {
+     "median": 1.159,
+     "min": 1.151,
+     "max": 1.167,
+     "cv": 0.0051725
+    },
+    "server_ops": {
+     "median": 55130.0,
+     "min": 54748.4,
+     "max": 55390.2,
+     "cv": 0.00408903
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p17.intset512.sdiffstore.r1",
+     "t": "2026-11-25T01:45:42+00:00",
+     "ok": true,
+     "ops": 55062.6,
+     "avg_ms": 0.902,
+     "p50_ms": 0.895,
+     "p95_ms": 1.063,
+     "p99_ms": 1.159,
+     "server_ops": 55130.0
+    },
+    {
+     "rep": 2,
+     "pair": "p17.intset512.sdiffstore.r2",
+     "t": "2026-11-25T01:47:38+00:00",
+     "ok": true,
+     "ops": 55284.0,
+     "avg_ms": 0.898,
+     "p50_ms": 0.895,
+     "p95_ms": 1.071,
+     "p99_ms": 1.151,
+     "server_ops": 55335.2
+    },
+    {
+     "rep": 3,
+     "pair": "p17.intset512.sdiffstore.r3",
+     "t": "2026-11-25T01:48:28+00:00",
+     "ok": true,
+     "ops": 55050.4,
+     "avg_ms": 0.903,
+     "p50_ms": 0.895,
+     "p95_ms": 1.063,
+     "p99_ms": 1.159,
+     "server_ops": 55124.5
+    },
+    {
+     "rep": 4,
+     "pair": "p17.intset512.sdiffstore.r4",
+     "t": "2026-11-25T01:49:51+00:00",
+     "ok": true,
+     "ops": 54662.8,
+     "avg_ms": 0.909,
+     "p50_ms": 0.903,
+     "p95_ms": 1.071,
+     "p99_ms": 1.167,
+     "server_ops": 54748.4
+    },
+    {
+     "rep": 5,
+     "pair": "p17.intset512.sdiffstore.r5",
+     "t": "2026-11-25T01:52:54+00:00",
+     "ok": true,
+     "ops": 55317.6,
+     "avg_ms": 0.898,
+     "p50_ms": 0.895,
+     "p95_ms": 1.063,
+     "p99_ms": 1.151,
+     "server_ops": 55390.2
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.scard.P1",
+   "family": "set commands",
+   "command": "scard",
+   "command_line": "SCARD set:a:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 199642.0,
+     "min": 195856.0,
+     "max": 206285.0,
+     "cv": 0.0172072
+    },
+    "avg_ms": {
+     "median": 0.168,
+     "min": 0.164,
+     "max": 0.171,
+     "cv": 0.0153932
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.151,
+     "max": 0.167,
+     "cv": 0.0318217
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.207,
+     "max": 0.215,
+     "cv": 0.0149953
+    },
+    "p99_ms": {
+     "median": 0.255,
+     "min": 0.247,
+     "max": 0.271,
+     "cv": 0.0369515
+    },
+    "server_ops": {
+     "median": 198021.0,
+     "min": 196188.0,
+     "max": 205581.0,
+     "cv": 0.0172057
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p22.hashtable100k.scard.r1",
+     "t": "2026-11-25T01:37:13+00:00",
+     "ok": true,
+     "ops": 206285.0,
+     "avg_ms": 0.164,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 205581.0
+    },
+    {
+     "rep": 2,
+     "pair": "p22.hashtable100k.scard.r2",
+     "t": "2026-11-25T01:39:11+00:00",
+     "ok": true,
+     "ops": 202031.0,
+     "avg_ms": 0.165,
+     "p50_ms": 0.159,
+     "p95_ms": 0.207,
+     "p99_ms": 0.247,
+     "server_ops": 202376.0
+    },
+    {
+     "rep": 3,
+     "pair": "p22.hashtable100k.scard.r3",
+     "t": "2026-11-25T01:40:01+00:00",
+     "ok": true,
+     "ops": 195856.0,
+     "avg_ms": 0.171,
+     "p50_ms": 0.167,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 196188.0
+    },
+    {
+     "rep": 4,
+     "pair": "p22.hashtable100k.scard.r4",
+     "t": "2026-11-25T01:41:25+00:00",
+     "ok": true,
+     "ops": 199261.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 198002.0
+    },
+    {
+     "rep": 5,
+     "pair": "p22.hashtable100k.scard.r5",
+     "t": "2026-11-25T01:44:29+00:00",
+     "ok": true,
+     "ops": 199642.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 198021.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.sunion.P1",
+   "family": "set commands",
+   "command": "sunion",
+   "command_line": "SUNION set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 7469.31,
+     "min": 7366.44,
+     "max": 7548.0,
+     "cv": 0.00805323
+    },
+    "avg_ms": {
+     "median": 6.605,
+     "min": 6.541,
+     "max": 6.702,
+     "cv": 0.00803023
+    },
+    "p50_ms": {
+     "median": 6.751,
+     "min": 6.703,
+     "max": 6.767,
+     "cv": 0.00347198
+    },
+    "p95_ms": {
+     "median": 6.951,
+     "min": 6.903,
+     "max": 7.055,
+     "cv": 0.00793671
+    },
+    "p99_ms": {
+     "median": 8.255,
+     "min": 8.047,
+     "max": 8.951,
+     "cv": 0.0400446
+    },
+    "server_ops": {
+     "median": 7411.53,
+     "min": 7383.46,
+     "max": 7543.27,
+     "cv": 0.00789285
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p22.intset512.sunion.r1",
+     "t": "2026-11-25T01:45:35+00:00",
+     "ok": true,
+     "ops": 7469.31,
+     "avg_ms": 6.605,
+     "p50_ms": 6.727,
+     "p95_ms": 6.935,
+     "p99_ms": 8.095,
+     "server_ops": 7389.27
+    },
+    {
+     "rep": 2,
+     "pair": "p22.intset512.sunion.r2",
+     "t": "2026-11-25T01:47:31+00:00",
+     "ok": true,
+     "ops": 7548.0,
+     "avg_ms": 6.541,
+     "p50_ms": 6.703,
+     "p95_ms": 6.903,
+     "p99_ms": 8.255,
+     "server_ops": 7543.27
+    },
+    {
+     "rep": 3,
+     "pair": "p22.intset512.sunion.r3",
+     "t": "2026-11-25T01:48:21+00:00",
+     "ok": true,
+     "ops": 7478.31,
+     "avg_ms": 6.593,
+     "p50_ms": 6.759,
+     "p95_ms": 7.055,
+     "p99_ms": 8.951,
+     "server_ops": 7449.14
+    },
+    {
+     "rep": 4,
+     "pair": "p22.intset512.sunion.r4",
+     "t": "2026-11-25T01:49:44+00:00",
+     "ok": true,
+     "ops": 7426.19,
+     "avg_ms": 6.637,
+     "p50_ms": 6.751,
+     "p95_ms": 6.951,
+     "p99_ms": 8.047,
+     "server_ops": 7411.53
+    },
+    {
+     "rep": 5,
+     "pair": "p22.intset512.sunion.r5",
+     "t": "2026-11-25T01:52:47+00:00",
+     "ok": true,
+     "ops": 7366.44,
+     "avg_ms": 6.702,
+     "p50_ms": 6.767,
+     "p95_ms": 7.015,
+     "p99_ms": 8.551,
+     "server_ops": 7383.46
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.srem_sadd.P1",
+   "family": "set commands",
+   "command": "srem_sadd",
+   "command_line": "SREM set:a:000000000000 txxx__rand_int__ | SADD set:a:000000000000 txxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 369587.0,
+     "min": 367485.0,
+     "max": 379673.0,
+     "cv": 0.0115823
+    },
+    "avg_ms": {
+     "median": 0.111,
+     "min": 0.109,
+     "max": 0.112,
+     "cv": 0.00884292
+    },
+    "p50_ms": {
+     "median": 0.111,
+     "min": 0.111,
+     "max": 0.111,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.167,
+     "min": 0.151,
+     "max": 0.167,
+     "cv": 0.039072
+    },
+    "p99_ms": {
+     "median": 0.191,
+     "min": 0.191,
+     "max": 0.191,
+     "cv": 0.0
+    },
+    "server_ops": {
+     "median": 367861.0,
+     "min": 365433.0,
+     "max": 381050.0,
+     "cv": 0.0151574
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p19.hashtable100k.srem_sadd.r1",
+     "t": "2026-11-25T01:37:13+00:00",
+     "ok": true,
+     "ops": 367485.0,
+     "avg_ms": 0.111,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 365433.0
+    },
+    {
+     "rep": 2,
+     "pair": "p19.hashtable100k.srem_sadd.r2",
+     "t": "2026-11-25T01:39:10+00:00",
+     "ok": true,
+     "ops": 371747.0,
+     "avg_ms": 0.111,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 369992.0
+    },
+    {
+     "rep": 3,
+     "pair": "p19.hashtable100k.srem_sadd.r3",
+     "t": "2026-11-25T01:40:01+00:00",
+     "ok": true,
+     "ops": 369587.0,
+     "avg_ms": 0.111,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 367861.0
+    },
+    {
+     "rep": 4,
+     "pair": "p19.hashtable100k.srem_sadd.r4",
+     "t": "2026-11-25T01:41:25+00:00",
+     "ok": true,
+     "ops": 379673.0,
+     "avg_ms": 0.109,
+     "p50_ms": 0.111,
+     "p95_ms": 0.151,
+     "p99_ms": 0.191,
+     "server_ops": 381050.0
+    },
+    {
+     "rep": 5,
+     "pair": "p19.hashtable100k.srem_sadd.r5",
+     "t": "2026-11-25T01:44:29+00:00",
+     "ok": true,
+     "ops": 369063.0,
+     "avg_ms": 0.112,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 366809.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.sinter.P1",
+   "family": "set commands",
+   "command": "sinter",
+   "command_line": "SINTER set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 34785.6,
+     "min": 34608.7,
+     "max": 35285.6,
+     "cv": 0.00728276
+    },
+    "avg_ms": {
+     "median": 1.398,
+     "min": 1.382,
+     "max": 1.404,
+     "cv": 0.00670877
+    },
+    "p50_ms": {
+     "median": 1.399,
+     "min": 1.383,
+     "max": 1.407,
+     "cv": 0.00584499
+    },
+    "p95_ms": {
+     "median": 1.535,
+     "min": 1.503,
+     "max": 1.559,
+     "cv": 0.0127661
+    },
+    "p99_ms": {
+     "median": 1.639,
+     "min": 1.615,
+     "max": 1.647,
+     "cv": 0.00731954
+    },
+    "server_ops": {
+     "median": 34784.2,
+     "min": 34583.9,
+     "max": 35286.5,
+     "cv": 0.00757771
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p19.intset512.sinter.r1",
+     "t": "2026-11-25T01:45:36+00:00",
+     "ok": true,
+     "ops": 34608.7,
+     "avg_ms": 1.404,
+     "p50_ms": 1.407,
+     "p95_ms": 1.559,
+     "p99_ms": 1.647,
+     "server_ops": 34583.9
+    },
+    {
+     "rep": 2,
+     "pair": "p19.intset512.sinter.r2",
+     "t": "2026-11-25T01:47:32+00:00",
+     "ok": true,
+     "ops": 35285.6,
+     "avg_ms": 1.382,
+     "p50_ms": 1.391,
+     "p95_ms": 1.503,
+     "p99_ms": 1.615,
+     "server_ops": 35286.5
+    },
+    {
+     "rep": 3,
+     "pair": "p19.intset512.sinter.r3",
+     "t": "2026-11-25T01:48:22+00:00",
+     "ok": true,
+     "ops": 34778.2,
+     "avg_ms": 1.398,
+     "p50_ms": 1.399,
+     "p95_ms": 1.535,
+     "p99_ms": 1.639,
+     "server_ops": 34758.2
+    },
+    {
+     "rep": 4,
+     "pair": "p19.intset512.sinter.r4",
+     "t": "2026-11-25T01:49:45+00:00",
+     "ok": true,
+     "ops": 34785.6,
+     "avg_ms": 1.4,
+     "p50_ms": 1.399,
+     "p95_ms": 1.551,
+     "p99_ms": 1.647,
+     "server_ops": 34784.2
+    },
+    {
+     "rep": 5,
+     "pair": "p19.intset512.sinter.r5",
+     "t": "2026-11-25T01:52:48+00:00",
+     "ok": true,
+     "ops": 35153.9,
+     "avg_ms": 1.382,
+     "p50_ms": 1.383,
+     "p95_ms": 1.527,
+     "p99_ms": 1.631,
+     "server_ops": 35161.3
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.sismember.P1",
+   "family": "set commands",
+   "command": "sismember",
+   "command_line": "SISMEMBER set:a:000000000000 mxxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 200114.0,
+     "min": 195855.0,
+     "max": 203790.0,
+     "cv": 0.014008
+    },
+    "avg_ms": {
+     "median": 0.171,
+     "min": 0.166,
+     "max": 0.172,
+     "cv": 0.013237
+    },
+    "p50_ms": {
+     "median": 0.167,
+     "min": 0.159,
+     "max": 0.167,
+     "cv": 0.0239266
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0147738
+    },
+    "p99_ms": {
+     "median": 0.271,
+     "min": 0.239,
+     "max": 0.279,
+     "cv": 0.0520171
+    },
+    "server_ops": {
+     "median": 197403.0,
+     "min": 195396.0,
+     "max": 203963.0,
+     "cv": 0.0164523
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p20.hashtable100k.sismember.r1",
+     "t": "2026-11-25T01:37:13+00:00",
+     "ok": true,
+     "ops": 200114.0,
+     "avg_ms": 0.171,
+     "p50_ms": 0.167,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 197403.0
+    },
+    {
+     "rep": 2,
+     "pair": "p20.hashtable100k.sismember.r2",
+     "t": "2026-11-25T01:39:10+00:00",
+     "ok": true,
+     "ops": 203790.0,
+     "avg_ms": 0.166,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 203963.0
+    },
+    {
+     "rep": 3,
+     "pair": "p20.hashtable100k.sismember.r3",
+     "t": "2026-11-25T01:40:00+00:00",
+     "ok": true,
+     "ops": 200498.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.239,
+     "server_ops": 200419.0
+    },
+    {
+     "rep": 4,
+     "pair": "p20.hashtable100k.sismember.r4",
+     "t": "2026-11-25T01:41:24+00:00",
+     "ok": true,
+     "ops": 197055.0,
+     "avg_ms": 0.171,
+     "p50_ms": 0.167,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 195396.0
+    },
+    {
+     "rep": 5,
+     "pair": "p20.hashtable100k.sismember.r5",
+     "t": "2026-11-25T01:44:28+00:00",
+     "ok": true,
+     "ops": 195855.0,
+     "avg_ms": 0.172,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.279,
+     "server_ops": 195502.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.sintercard.P1",
+   "family": "set commands",
+   "command": "sintercard",
+   "command_line": "SINTERCARD 2 set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 148761.0,
+     "min": 147223.0,
+     "max": 151667.0,
+     "cv": 0.0112323
+    },
+    "avg_ms": {
+     "median": 0.326,
+     "min": 0.318,
+     "max": 0.328,
+     "cv": 0.0124149
+    },
+    "p50_ms": {
+     "median": 0.327,
+     "min": 0.319,
+     "max": 0.327,
+     "cv": 0.0121037
+    },
+    "p95_ms": {
+     "median": 0.391,
+     "min": 0.383,
+     "max": 0.407,
+     "cv": 0.0224132
+    },
+    "p99_ms": {
+     "median": 0.607,
+     "min": 0.591,
+     "max": 0.655,
+     "cv": 0.0349045
+    },
+    "server_ops": {
+     "median": 148723.0,
+     "min": 147675.0,
+     "max": 152162.0,
+     "cv": 0.0120179
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p20.intset512.sintercard.r1",
+     "t": "2026-11-25T01:45:35+00:00",
+     "ok": true,
+     "ops": 148761.0,
+     "avg_ms": 0.326,
+     "p50_ms": 0.327,
+     "p95_ms": 0.383,
+     "p99_ms": 0.607,
+     "server_ops": 148723.0
+    },
+    {
+     "rep": 2,
+     "pair": "p20.intset512.sintercard.r2",
+     "t": "2026-11-25T01:47:31+00:00",
+     "ok": true,
+     "ops": 148233.0,
+     "avg_ms": 0.327,
+     "p50_ms": 0.327,
+     "p95_ms": 0.391,
+     "p99_ms": 0.607,
+     "server_ops": 148031.0
+    },
+    {
+     "rep": 3,
+     "pair": "p20.intset512.sintercard.r3",
+     "t": "2026-11-25T01:48:20+00:00",
+     "ok": true,
+     "ops": 150959.0,
+     "avg_ms": 0.32,
+     "p50_ms": 0.319,
+     "p95_ms": 0.391,
+     "p99_ms": 0.591,
+     "server_ops": 151231.0
+    },
+    {
+     "rep": 4,
+     "pair": "p20.intset512.sintercard.r4",
+     "t": "2026-11-25T01:49:43+00:00",
+     "ok": true,
+     "ops": 147223.0,
+     "avg_ms": 0.328,
+     "p50_ms": 0.327,
+     "p95_ms": 0.407,
+     "p99_ms": 0.655,
+     "server_ops": 147675.0
+    },
+    {
+     "rep": 5,
+     "pair": "p20.intset512.sintercard.r5",
+     "t": "2026-11-25T01:52:46+00:00",
+     "ok": true,
+     "ops": 151667.0,
+     "avg_ms": 0.318,
+     "p50_ms": 0.319,
+     "p95_ms": 0.383,
+     "p99_ms": 0.615,
+     "server_ops": 152162.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.sscan.P1",
+   "family": "set commands",
+   "command": "sscan",
+   "command_line": "SSCAN set:a:000000000000 0 COUNT 10",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 176839.0,
+     "min": 167724.0,
+     "max": 178782.0,
+     "cv": 0.0223351
+    },
+    "avg_ms": {
+     "median": 0.185,
+     "min": 0.182,
+     "max": 0.194,
+     "cv": 0.0221174
+    },
+    "p50_ms": {
+     "median": 0.175,
+     "min": 0.175,
+     "max": 0.183,
+     "cv": 0.01812
+    },
+    "p95_ms": {
+     "median": 0.239,
+     "min": 0.239,
+     "max": 0.247,
+     "cv": 0.0133001
+    },
+    "p99_ms": {
+     "median": 0.311,
+     "min": 0.295,
+     "max": 0.407,
+     "cv": 0.140023
+    },
+    "server_ops": {
+     "median": 176895.0,
+     "min": 168264.0,
+     "max": 178804.0,
+     "cv": 0.0216586
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p24.hashtable100k.sscan.r1",
+     "t": "2026-11-25T01:37:13+00:00",
+     "ok": true,
+     "ops": 178782.0,
+     "avg_ms": 0.182,
+     "p50_ms": 0.175,
+     "p95_ms": 0.239,
+     "p99_ms": 0.295,
+     "server_ops": 178804.0
+    },
+    {
+     "rep": 2,
+     "pair": "p24.hashtable100k.sscan.r2",
+     "t": "2026-11-25T01:39:10+00:00",
+     "ok": true,
+     "ops": 177021.0,
+     "avg_ms": 0.184,
+     "p50_ms": 0.175,
+     "p95_ms": 0.239,
+     "p99_ms": 0.295,
+     "server_ops": 177929.0
+    },
+    {
+     "rep": 3,
+     "pair": "p24.hashtable100k.sscan.r3",
+     "t": "2026-11-25T01:40:00+00:00",
+     "ok": true,
+     "ops": 176701.0,
+     "avg_ms": 0.186,
+     "p50_ms": 0.175,
+     "p95_ms": 0.239,
+     "p99_ms": 0.383,
+     "server_ops": 176753.0
+    },
+    {
+     "rep": 4,
+     "pair": "p24.hashtable100k.sscan.r4",
+     "t": "2026-11-25T01:41:24+00:00",
+     "ok": true,
+     "ops": 176839.0,
+     "avg_ms": 0.185,
+     "p50_ms": 0.175,
+     "p95_ms": 0.239,
+     "p99_ms": 0.407,
+     "server_ops": 176895.0
+    },
+    {
+     "rep": 5,
+     "pair": "p24.hashtable100k.sscan.r5",
+     "t": "2026-11-25T01:44:28+00:00",
+     "ok": true,
+     "ops": 167724.0,
+     "avg_ms": 0.194,
+     "p50_ms": 0.183,
+     "p95_ms": 0.247,
+     "p99_ms": 0.311,
+     "server_ops": 168264.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.sdiff.P1",
+   "family": "set commands",
+   "command": "sdiff",
+   "command_line": "SDIFF set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 36527.1,
+     "min": 36270.2,
+     "max": 36962.1,
+     "cv": 0.00690319
+    },
+    "avg_ms": {
+     "median": 1.323,
+     "min": 1.305,
+     "max": 1.34,
+     "cv": 0.0088591
+    },
+    "p50_ms": {
+     "median": 1.327,
+     "min": 1.303,
+     "max": 1.351,
+     "cv": 0.0117041
+    },
+    "p95_ms": {
+     "median": 1.479,
+     "min": 1.447,
+     "max": 1.495,
+     "cv": 0.0116894
+    },
+    "p99_ms": {
+     "median": 1.575,
+     "min": 1.559,
+     "max": 1.583,
+     "cv": 0.00556417
+    },
+    "server_ops": {
+     "median": 36587.9,
+     "min": 36293.1,
+     "max": 37009.5,
+     "cv": 0.00711534
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p24.intset512.sdiff.r1",
+     "t": "2026-11-25T01:45:34+00:00",
+     "ok": true,
+     "ops": 36962.1,
+     "avg_ms": 1.314,
+     "p50_ms": 1.319,
+     "p95_ms": 1.447,
+     "p99_ms": 1.559,
+     "server_ops": 37009.5
+    },
+    {
+     "rep": 2,
+     "pair": "p24.intset512.sdiff.r2",
+     "t": "2026-11-25T01:47:31+00:00",
+     "ok": true,
+     "ops": 36527.1,
+     "avg_ms": 1.323,
+     "p50_ms": 1.327,
+     "p95_ms": 1.495,
+     "p99_ms": 1.583,
+     "server_ops": 36587.9
+    },
+    {
+     "rep": 3,
+     "pair": "p24.intset512.sdiff.r3",
+     "t": "2026-11-25T01:48:20+00:00",
+     "ok": true,
+     "ops": 36270.2,
+     "avg_ms": 1.34,
+     "p50_ms": 1.351,
+     "p95_ms": 1.463,
+     "p99_ms": 1.575,
+     "server_ops": 36293.1
+    },
+    {
+     "rep": 4,
+     "pair": "p24.intset512.sdiff.r4",
+     "t": "2026-11-25T01:49:43+00:00",
+     "ok": true,
+     "ops": 36848.1,
+     "avg_ms": 1.305,
+     "p50_ms": 1.303,
+     "p95_ms": 1.487,
+     "p99_ms": 1.575,
+     "server_ops": 36894.2
+    },
+    {
+     "rep": 5,
+     "pair": "p24.intset512.sdiff.r5",
+     "t": "2026-11-25T01:52:46+00:00",
+     "ok": true,
+     "ops": 36480.5,
+     "avg_ms": 1.325,
+     "p50_ms": 1.327,
+     "p95_ms": 1.479,
+     "p99_ms": 1.583,
+     "server_ops": 36507.1
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.smismember.P1",
+   "family": "set commands",
+   "command": "smismember",
+   "command_line": "SMISMEMBER set:a:000000000000 mxxx__rand_int__ mxxx__rand_int__ mxxx__rand_int__ mxxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 196889.0,
+     "min": 192934.0,
+     "max": 200953.0,
+     "cv": 0.0164946
+    },
+    "avg_ms": {
+     "median": 0.174,
+     "min": 0.17,
+     "max": 0.176,
+     "cv": 0.0146232
+    },
+    "p50_ms": {
+     "median": 0.167,
+     "min": 0.159,
+     "max": 0.175,
+     "cv": 0.036195
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0147738
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.255,
+     "max": 0.303,
+     "cv": 0.0634125
+    },
+    "server_ops": {
+     "median": 198641.0,
+     "min": 193100.0,
+     "max": 201423.0,
+     "cv": 0.0170632
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p21.hashtable100k.smismember.r1",
+     "t": "2026-11-25T01:37:13+00:00",
+     "ok": true,
+     "ops": 192934.0,
+     "avg_ms": 0.176,
+     "p50_ms": 0.175,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 193100.0
+    },
+    {
+     "rep": 2,
+     "pair": "p21.hashtable100k.smismember.r2",
+     "t": "2026-11-25T01:39:10+00:00",
+     "ok": true,
+     "ops": 200404.0,
+     "avg_ms": 0.17,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 200380.0
+    },
+    {
+     "rep": 3,
+     "pair": "p21.hashtable100k.smismember.r3",
+     "t": "2026-11-25T01:40:01+00:00",
+     "ok": true,
+     "ops": 196889.0,
+     "avg_ms": 0.174,
+     "p50_ms": 0.167,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 198641.0
+    },
+    {
+     "rep": 4,
+     "pair": "p21.hashtable100k.smismember.r4",
+     "t": "2026-11-25T01:41:24+00:00",
+     "ok": true,
+     "ops": 193990.0,
+     "avg_ms": 0.175,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.303,
+     "server_ops": 193973.0
+    },
+    {
+     "rep": 5,
+     "pair": "p21.hashtable100k.smismember.r5",
+     "t": "2026-11-25T01:44:28+00:00",
+     "ok": true,
+     "ops": 200953.0,
+     "avg_ms": 0.17,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 201423.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.sinterstore.P1",
+   "family": "set commands",
+   "command": "sinterstore",
+   "command_line": "SINTERSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 50165.3,
+     "min": 50100.6,
+     "max": 50874.9,
+     "cv": 0.00635788
+    },
+    "avg_ms": {
+     "median": 0.993,
+     "min": 0.98,
+     "max": 0.994,
+     "cv": 0.00611497
+    },
+    "p50_ms": {
+     "median": 0.983,
+     "min": 0.983,
+     "max": 0.991,
+     "cv": 0.00397403
+    },
+    "p95_ms": {
+     "median": 1.111,
+     "min": 1.039,
+     "max": 1.175,
+     "cv": 0.0400084
+    },
+    "p99_ms": {
+     "median": 1.231,
+     "min": 1.175,
+     "max": 1.247,
+     "cv": 0.0206854
+    },
+    "server_ops": {
+     "median": 50199.8,
+     "min": 50130.2,
+     "max": 50912.2,
+     "cv": 0.00626677
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p21.intset512.sinterstore.r1",
+     "t": "2026-11-25T01:45:34+00:00",
+     "ok": true,
+     "ops": 50142.2,
+     "avg_ms": 0.994,
+     "p50_ms": 0.991,
+     "p95_ms": 1.111,
+     "p99_ms": 1.231,
+     "server_ops": 50193.7
+    },
+    {
+     "rep": 2,
+     "pair": "p21.intset512.sinterstore.r2",
+     "t": "2026-11-25T01:47:31+00:00",
+     "ok": true,
+     "ops": 50677.2,
+     "avg_ms": 0.983,
+     "p50_ms": 0.983,
+     "p95_ms": 1.103,
+     "p99_ms": 1.223,
+     "server_ops": 50691.1
+    },
+    {
+     "rep": 3,
+     "pair": "p21.intset512.sinterstore.r3",
+     "t": "2026-11-25T01:48:20+00:00",
+     "ok": true,
+     "ops": 50165.3,
+     "avg_ms": 0.993,
+     "p50_ms": 0.983,
+     "p95_ms": 1.175,
+     "p99_ms": 1.247,
+     "server_ops": 50199.8
+    },
+    {
+     "rep": 4,
+     "pair": "p21.intset512.sinterstore.r4",
+     "t": "2026-11-25T01:49:44+00:00",
+     "ok": true,
+     "ops": 50874.9,
+     "avg_ms": 0.98,
+     "p50_ms": 0.983,
+     "p95_ms": 1.039,
+     "p99_ms": 1.175,
+     "server_ops": 50912.2
+    },
+    {
+     "rep": 5,
+     "pair": "p21.intset512.sinterstore.r5",
+     "t": "2026-11-25T01:52:46+00:00",
+     "ok": true,
+     "ops": 50100.6,
+     "avg_ms": 0.994,
+     "p50_ms": 0.991,
+     "p95_ms": 1.135,
+     "p99_ms": 1.239,
+     "server_ops": 50130.2
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.srandmember.P1",
+   "family": "set commands",
+   "command": "srandmember",
+   "command_line": "SRANDMEMBER set:a:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 204088.0,
+     "min": 198907.0,
+     "max": 206299.0,
+     "cv": 0.0149325
+    },
+    "avg_ms": {
+     "median": 0.166,
+     "min": 0.164,
+     "max": 0.171,
+     "cv": 0.0148441
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.151,
+     "max": 0.167,
+     "cv": 0.0318217
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.215,
+     "cv": 0.0
+    },
+    "p99_ms": {
+     "median": 0.255,
+     "min": 0.231,
+     "max": 0.263,
+     "cv": 0.0475508
+    },
+    "server_ops": {
+     "median": 203804.0,
+     "min": 199184.0,
+     "max": 206250.0,
+     "cv": 0.0149903
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p23.hashtable100k.srandmember.r1",
+     "t": "2026-11-25T01:37:13+00:00",
+     "ok": true,
+     "ops": 199658.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 199234.0
+    },
+    {
+     "rep": 2,
+     "pair": "p23.hashtable100k.srandmember.r2",
+     "t": "2026-11-25T01:39:10+00:00",
+     "ok": true,
+     "ops": 204088.0,
+     "avg_ms": 0.166,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 203804.0
+    },
+    {
+     "rep": 3,
+     "pair": "p23.hashtable100k.srandmember.r3",
+     "t": "2026-11-25T01:40:00+00:00",
+     "ok": true,
+     "ops": 198907.0,
+     "avg_ms": 0.171,
+     "p50_ms": 0.167,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 199184.0
+    },
+    {
+     "rep": 4,
+     "pair": "p23.hashtable100k.srandmember.r4",
+     "t": "2026-11-25T01:41:24+00:00",
+     "ok": true,
+     "ops": 205444.0,
+     "avg_ms": 0.166,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.247,
+     "server_ops": 205540.0
+    },
+    {
+     "rep": 5,
+     "pair": "p23.hashtable100k.srandmember.r5",
+     "t": "2026-11-25T01:44:28+00:00",
+     "ok": true,
+     "ops": 206299.0,
+     "avg_ms": 0.164,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.231,
+     "server_ops": 206250.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.sunionstore.P1",
+   "family": "set commands",
+   "command": "sunionstore",
+   "command_line": "SUNIONSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 9045.38,
+     "min": 9036.06,
+     "max": 9120.75,
+     "cv": 0.00367837
+    },
+    "avg_ms": {
+     "median": 5.525,
+     "min": 5.479,
+     "max": 5.531,
+     "cv": 0.00369198
+    },
+    "p50_ms": {
+     "median": 5.519,
+     "min": 5.479,
+     "max": 5.535,
+     "cv": 0.00360393
+    },
+    "p95_ms": {
+     "median": 5.639,
+     "min": 5.599,
+     "max": 5.663,
+     "cv": 0.00430922
+    },
+    "p99_ms": {
+     "median": 5.719,
+     "min": 5.663,
+     "max": 5.751,
+     "cv": 0.00528311
+    },
+    "server_ops": {
+     "median": 9044.2,
+     "min": 9030.24,
+     "max": 9123.99,
+     "cv": 0.00391907
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p23.intset512.sunionstore.r1",
+     "t": "2026-11-25T01:45:35+00:00",
+     "ok": true,
+     "ops": 9089.94,
+     "avg_ms": 5.498,
+     "p50_ms": 5.495,
+     "p95_ms": 5.607,
+     "p99_ms": 5.703,
+     "server_ops": 9091.86
+    },
+    {
+     "rep": 2,
+     "pair": "p23.intset512.sunionstore.r2",
+     "t": "2026-11-25T01:47:31+00:00",
+     "ok": true,
+     "ops": 9120.75,
+     "avg_ms": 5.479,
+     "p50_ms": 5.479,
+     "p95_ms": 5.599,
+     "p99_ms": 5.663,
+     "server_ops": 9123.99
+    },
+    {
+     "rep": 3,
+     "pair": "p23.intset512.sunionstore.r3",
+     "t": "2026-11-25T01:48:21+00:00",
+     "ok": true,
+     "ops": 9045.38,
+     "avg_ms": 5.525,
+     "p50_ms": 5.519,
+     "p95_ms": 5.639,
+     "p99_ms": 5.719,
+     "server_ops": 9044.2
+    },
+    {
+     "rep": 4,
+     "pair": "p23.intset512.sunionstore.r4",
+     "t": "2026-11-25T01:49:44+00:00",
+     "ok": true,
+     "ops": 9040.12,
+     "avg_ms": 5.528,
+     "p50_ms": 5.519,
+     "p95_ms": 5.647,
+     "p99_ms": 5.735,
+     "server_ops": 9042.99
+    },
+    {
+     "rep": 5,
+     "pair": "p23.intset512.sunionstore.r5",
+     "t": "2026-11-25T01:52:47+00:00",
+     "ok": true,
+     "ops": 9036.06,
+     "avg_ms": 5.531,
+     "p50_ms": 5.535,
+     "p95_ms": 5.663,
+     "p99_ms": 5.751,
+     "server_ops": 9030.24
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.sadd_existing.P1",
+   "family": "set commands",
+   "command": "sadd_existing",
+   "command_line": "SADD set:a:000000000000 mxxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 207877.0,
+     "min": 197969.0,
+     "max": 209865.0,
+     "cv": 0.0209305
+    },
+    "avg_ms": {
+     "median": 0.163,
+     "min": 0.162,
+     "max": 0.171,
+     "cv": 0.0208848
+    },
+    "p50_ms": {
+     "median": 0.151,
+     "min": 0.151,
+     "max": 0.167,
+     "cv": 0.0415045
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0147738
+    },
+    "p99_ms": {
+     "median": 0.255,
+     "min": 0.239,
+     "max": 0.359,
+     "cv": 0.169488
+    },
+    "server_ops": {
+     "median": 207983.0,
+     "min": 198020.0,
+     "max": 209842.0,
+     "cv": 0.0207995
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p18.hashtable100k.sadd_existing.r1",
+     "t": "2026-11-25T01:37:13+00:00",
+     "ok": true,
+     "ops": 209865.0,
+     "avg_ms": 0.162,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.247,
+     "server_ops": 209842.0
+    },
+    {
+     "rep": 2,
+     "pair": "p18.hashtable100k.sadd_existing.r2",
+     "t": "2026-11-25T01:39:10+00:00",
+     "ok": true,
+     "ops": 207865.0,
+     "avg_ms": 0.163,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.327,
+     "server_ops": 207618.0
+    },
+    {
+     "rep": 3,
+     "pair": "p18.hashtable100k.sadd_existing.r3",
+     "t": "2026-11-25T01:40:01+00:00",
+     "ok": true,
+     "ops": 197969.0,
+     "avg_ms": 0.171,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.359,
+     "server_ops": 198020.0
+    },
+    {
+     "rep": 4,
+     "pair": "p18.hashtable100k.sadd_existing.r4",
+     "t": "2026-11-25T01:41:24+00:00",
+     "ok": true,
+     "ops": 208852.0,
+     "avg_ms": 0.162,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.239,
+     "server_ops": 208885.0
+    },
+    {
+     "rep": 5,
+     "pair": "p18.hashtable100k.sadd_existing.r5",
+     "t": "2026-11-25T01:44:28+00:00",
+     "ok": true,
+     "ops": 207877.0,
+     "avg_ms": 0.163,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 207983.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.smove.P1",
+   "family": "set commands",
+   "command": "smove",
+   "command_line": "SMOVE set:a:000000000000 set:b:000000000000 2__rand_int__ | SMOVE set:b:000000000000 set:a:000000000000 2__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 376890.0,
+     "min": 371680.0,
+     "max": 380646.0,
+     "cv": 0.0084176
+    },
+    "avg_ms": {
+     "median": 0.109,
+     "min": 0.108,
+     "max": 0.112,
+     "cv": 0.0136806
+    },
+    "p50_ms": {
+     "median": 0.111,
+     "min": 0.111,
+     "max": 0.111,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.159,
+     "min": 0.151,
+     "max": 0.167,
+     "cv": 0.0372768
+    },
+    "p99_ms": {
+     "median": 0.191,
+     "min": 0.191,
+     "max": 0.191,
+     "cv": 0.0
+    },
+    "server_ops": {
+     "median": 378026.0,
+     "min": 372851.0,
+     "max": 380262.0,
+     "cv": 0.00765186
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p18.intset512.smove.r1",
+     "t": "2026-11-25T01:45:35+00:00",
+     "ok": true,
+     "ops": 371680.0,
+     "avg_ms": 0.112,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 374648.0
+    },
+    {
+     "rep": 2,
+     "pair": "p18.intset512.smove.r2",
+     "t": "2026-11-25T01:47:31+00:00",
+     "ok": true,
+     "ops": 380646.0,
+     "avg_ms": 0.11,
+     "p50_ms": 0.111,
+     "p95_ms": 0.151,
+     "p99_ms": 0.191,
+     "server_ops": 379690.0
+    },
+    {
+     "rep": 3,
+     "pair": "p18.intset512.smove.r3",
+     "t": "2026-11-25T01:48:20+00:00",
+     "ok": true,
+     "ops": 379925.0,
+     "avg_ms": 0.109,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 380262.0
+    },
+    {
+     "rep": 4,
+     "pair": "p18.intset512.smove.r4",
+     "t": "2026-11-25T01:49:43+00:00",
+     "ok": true,
+     "ops": 376458.0,
+     "avg_ms": 0.108,
+     "p50_ms": 0.111,
+     "p95_ms": 0.159,
+     "p99_ms": 0.191,
+     "server_ops": 372851.0
+    },
+    {
+     "rep": 5,
+     "pair": "p18.intset512.smove.r5",
+     "t": "2026-11-25T01:52:46+00:00",
+     "ok": true,
+     "ops": 376890.0,
+     "avg_ms": 0.108,
+     "p50_ms": 0.111,
+     "p95_ms": 0.159,
+     "p99_ms": 0.191,
+     "server_ops": 378026.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.srem_sadd.P1",
+   "family": "set commands",
+   "command": "srem_sadd",
+   "command_line": "SREM set:a:000000000000 txxx__rand_int__ | SADD set:a:000000000000 txxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 379697.0,
+     "min": 376456.0,
+     "max": 391431.0,
+     "cv": 0.0147549
+    },
+    "avg_ms": {
+     "median": 0.111,
+     "min": 0.109,
+     "max": 0.112,
+     "cv": 0.00922065
+    },
+    "p50_ms": {
+     "median": 0.111,
+     "min": 0.111,
+     "max": 0.111,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.159,
+     "min": 0.143,
+     "max": 0.159,
+     "cv": 0.0415045
+    },
+    "p99_ms": {
+     "median": 0.191,
+     "min": 0.191,
+     "max": 0.191,
+     "cv": 0.0
+    },
+    "server_ops": {
+     "median": 383029.0,
+     "min": 372359.0,
+     "max": 391044.0,
+     "cv": 0.0163284
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p26.listpack16.srem_sadd.r1",
+     "t": "2026-11-25T01:37:26+00:00",
+     "ok": true,
+     "ops": 391431.0,
+     "avg_ms": 0.109,
+     "p50_ms": 0.111,
+     "p95_ms": 0.143,
+     "p99_ms": 0.191,
+     "server_ops": 391044.0
+    },
+    {
+     "rep": 2,
+     "pair": "p26.listpack16.srem_sadd.r2",
+     "t": "2026-11-25T01:39:23+00:00",
+     "ok": true,
+     "ops": 377730.0,
+     "avg_ms": 0.112,
+     "p50_ms": 0.111,
+     "p95_ms": 0.159,
+     "p99_ms": 0.191,
+     "server_ops": 379617.0
+    },
+    {
+     "rep": 3,
+     "pair": "p26.listpack16.srem_sadd.r3",
+     "t": "2026-11-25T01:40:13+00:00",
+     "ok": true,
+     "ops": 386026.0,
+     "avg_ms": 0.11,
+     "p50_ms": 0.111,
+     "p95_ms": 0.151,
+     "p99_ms": 0.191,
+     "server_ops": 385750.0
+    },
+    {
+     "rep": 4,
+     "pair": "p26.listpack16.srem_sadd.r4",
+     "t": "2026-11-25T01:41:36+00:00",
+     "ok": true,
+     "ops": 379697.0,
+     "avg_ms": 0.111,
+     "p50_ms": 0.111,
+     "p95_ms": 0.159,
+     "p99_ms": 0.191,
+     "server_ops": 383029.0
+    },
+    {
+     "rep": 5,
+     "pair": "p26.listpack16.srem_sadd.r5",
+     "t": "2026-11-25T01:44:39+00:00",
+     "ok": true,
+     "ops": 376456.0,
+     "avg_ms": 0.111,
+     "p50_ms": 0.111,
+     "p95_ms": 0.159,
+     "p99_ms": 0.191,
+     "server_ops": 372359.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.scard.P1",
+   "family": "set commands",
+   "command": "scard",
+   "command_line": "SCARD set:a:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 206792.0,
+     "min": 205822.0,
+     "max": 211104.0,
+     "cv": 0.00914612
+    },
+    "avg_ms": {
+     "median": 0.165,
+     "min": 0.161,
+     "max": 0.165,
+     "cv": 0.0094463
+    },
+    "p50_ms": {
+     "median": 0.151,
+     "min": 0.151,
+     "max": 0.159,
+     "cv": 0.0209699
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.215,
+     "cv": 0.0
+    },
+    "p99_ms": {
+     "median": 0.255,
+     "min": 0.231,
+     "max": 0.263,
+     "cv": 0.0433722
+    },
+    "server_ops": {
+     "median": 207520.0,
+     "min": 205742.0,
+     "max": 211324.0,
+     "cv": 0.00940048
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p26.listpack128.scard.r1",
+     "t": "2026-11-25T01:45:45+00:00",
+     "ok": true,
+     "ops": 206306.0,
+     "avg_ms": 0.165,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 206272.0
+    },
+    {
+     "rep": 2,
+     "pair": "p26.listpack128.scard.r2",
+     "t": "2026-11-25T01:47:41+00:00",
+     "ok": true,
+     "ops": 205822.0,
+     "avg_ms": 0.165,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.247,
+     "server_ops": 205742.0
+    },
+    {
+     "rep": 3,
+     "pair": "p26.listpack128.scard.r3",
+     "t": "2026-11-25T01:48:31+00:00",
+     "ok": true,
+     "ops": 206792.0,
+     "avg_ms": 0.164,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 207520.0
+    },
+    {
+     "rep": 4,
+     "pair": "p26.listpack128.scard.r4",
+     "t": "2026-11-25T01:49:54+00:00",
+     "ok": true,
+     "ops": 211104.0,
+     "avg_ms": 0.161,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.231,
+     "server_ops": 211324.0
+    },
+    {
+     "rep": 5,
+     "pair": "p26.listpack128.scard.r5",
+     "t": "2026-11-25T01:52:57+00:00",
+     "ok": true,
+     "ops": 208118.0,
+     "avg_ms": 0.165,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 207918.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.sismember.P1",
+   "family": "set commands",
+   "command": "sismember",
+   "command_line": "SISMEMBER set:a:000000000000 mxxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 202053.0,
+     "min": 200010.0,
+     "max": 205404.0,
+     "cv": 0.0103703
+    },
+    "avg_ms": {
+     "median": 0.166,
+     "min": 0.165,
+     "max": 0.169,
+     "cv": 0.00975275
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.159,
+     "max": 0.159,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.215,
+     "cv": 0.0
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.247,
+     "max": 0.271,
+     "cv": 0.0371805
+    },
+    "server_ops": {
+     "median": 203001.0,
+     "min": 198534.0,
+     "max": 205436.0,
+     "cv": 0.0131997
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p27.listpack16.sismember.r1",
+     "t": "2026-11-25T01:37:26+00:00",
+     "ok": true,
+     "ops": 202053.0,
+     "avg_ms": 0.166,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 203001.0
+    },
+    {
+     "rep": 2,
+     "pair": "p27.listpack16.sismember.r2",
+     "t": "2026-11-25T01:39:23+00:00",
+     "ok": true,
+     "ops": 200010.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 198534.0
+    },
+    {
+     "rep": 3,
+     "pair": "p27.listpack16.sismember.r3",
+     "t": "2026-11-25T01:40:12+00:00",
+     "ok": true,
+     "ops": 203662.0,
+     "avg_ms": 0.165,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.247,
+     "server_ops": 204735.0
+    },
+    {
+     "rep": 4,
+     "pair": "p27.listpack16.sismember.r4",
+     "t": "2026-11-25T01:41:35+00:00",
+     "ok": true,
+     "ops": 205404.0,
+     "avg_ms": 0.165,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.247,
+     "server_ops": 205436.0
+    },
+    {
+     "rep": 5,
+     "pair": "p27.listpack16.sismember.r5",
+     "t": "2026-11-25T01:44:38+00:00",
+     "ok": true,
+     "ops": 200015.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 200011.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.smembers.P1",
+   "family": "set commands",
+   "command": "smembers",
+   "command_line": "SMEMBERS set:a:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 73447.4,
+     "min": 72911.9,
+     "max": 73850.2,
+     "cv": 0.00433534
+    },
+    "avg_ms": {
+     "median": 0.395,
+     "min": 0.393,
+     "max": 0.399,
+     "cv": 0.0052077
+    },
+    "p50_ms": {
+     "median": 0.383,
+     "min": 0.383,
+     "max": 0.391,
+     "cv": 0.0101481
+    },
+    "p95_ms": {
+     "median": 0.487,
+     "min": 0.479,
+     "max": 0.487,
+     "cv": 0.00810083
+    },
+    "p99_ms": {
+     "median": 0.663,
+     "min": 0.655,
+     "max": 0.679,
+     "cv": 0.0140378
+    },
+    "server_ops": {
+     "median": 73487.4,
+     "min": 72766.8,
+     "max": 73788.2,
+     "cv": 0.00470884
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p27.listpack128.smembers.r1",
+     "t": "2026-11-25T01:45:44+00:00",
+     "ok": true,
+     "ops": 72911.9,
+     "avg_ms": 0.399,
+     "p50_ms": 0.391,
+     "p95_ms": 0.487,
+     "p99_ms": 0.663,
+     "server_ops": 72766.8
+    },
+    {
+     "rep": 2,
+     "pair": "p27.listpack128.smembers.r2",
+     "t": "2026-11-25T01:47:41+00:00",
+     "ok": true,
+     "ops": 73850.2,
+     "avg_ms": 0.395,
+     "p50_ms": 0.383,
+     "p95_ms": 0.487,
+     "p99_ms": 0.655,
+     "server_ops": 73788.2
+    },
+    {
+     "rep": 3,
+     "pair": "p27.listpack128.smembers.r3",
+     "t": "2026-11-25T01:48:30+00:00",
+     "ok": true,
+     "ops": 73447.4,
+     "avg_ms": 0.396,
+     "p50_ms": 0.391,
+     "p95_ms": 0.479,
+     "p99_ms": 0.671,
+     "server_ops": 73487.4
+    },
+    {
+     "rep": 4,
+     "pair": "p27.listpack128.smembers.r4",
+     "t": "2026-11-25T01:49:53+00:00",
+     "ok": true,
+     "ops": 73149.4,
+     "avg_ms": 0.394,
+     "p50_ms": 0.383,
+     "p95_ms": 0.479,
+     "p99_ms": 0.679,
+     "server_ops": 73192.6
+    },
+    {
+     "rep": 5,
+     "pair": "p27.listpack128.smembers.r5",
+     "t": "2026-11-25T01:52:57+00:00",
+     "ok": true,
+     "ops": 73473.9,
+     "avg_ms": 0.393,
+     "p50_ms": 0.383,
+     "p95_ms": 0.487,
+     "p99_ms": 0.655,
+     "server_ops": 73493.9
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.sadd_existing.P1",
+   "family": "set commands",
+   "command": "sadd_existing",
+   "command_line": "SADD set:a:000000000000 mxxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 207285.0,
+     "min": 203934.0,
+     "max": 210962.0,
+     "cv": 0.0118506
+    },
+    "avg_ms": {
+     "median": 0.163,
+     "min": 0.161,
+     "max": 0.167,
+     "cv": 0.013441
+    },
+    "p50_ms": {
+     "median": 0.151,
+     "min": 0.151,
+     "max": 0.159,
+     "cv": 0.0209699
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.215,
+     "cv": 0.0
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.239,
+     "max": 0.311,
+     "cv": 0.0942713
+    },
+    "server_ops": {
+     "median": 207243.0,
+     "min": 204034.0,
+     "max": 210856.0,
+     "cv": 0.0112444
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p25.listpack16.sadd_existing.r1",
+     "t": "2026-11-25T01:37:27+00:00",
+     "ok": true,
+     "ops": 210962.0,
+     "avg_ms": 0.161,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.311,
+     "server_ops": 210856.0
+    },
+    {
+     "rep": 2,
+     "pair": "p25.listpack16.sadd_existing.r2",
+     "t": "2026-11-25T01:39:23+00:00",
+     "ok": true,
+     "ops": 206933.0,
+     "avg_ms": 0.163,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.239,
+     "server_ops": 207225.0
+    },
+    {
+     "rep": 3,
+     "pair": "p25.listpack16.sadd_existing.r3",
+     "t": "2026-11-25T01:40:13+00:00",
+     "ok": true,
+     "ops": 207285.0,
+     "avg_ms": 0.163,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 207243.0
+    },
+    {
+     "rep": 4,
+     "pair": "p25.listpack16.sadd_existing.r4",
+     "t": "2026-11-25T01:41:36+00:00",
+     "ok": true,
+     "ops": 209888.0,
+     "avg_ms": 0.161,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.247,
+     "server_ops": 209570.0
+    },
+    {
+     "rep": 5,
+     "pair": "p25.listpack16.sadd_existing.r5",
+     "t": "2026-11-25T01:44:39+00:00",
+     "ok": true,
+     "ops": 203934.0,
+     "avg_ms": 0.167,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 204034.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.smismember.P1",
+   "family": "set commands",
+   "command": "smismember",
+   "command_line": "SMISMEMBER set:a:000000000000 mxxx__rand_int__ mxxx__rand_int__ mxxx__rand_int__ mxxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 196984.0,
+     "min": 194235.0,
+     "max": 204465.0,
+     "cv": 0.0207641
+    },
+    "avg_ms": {
+     "median": 0.173,
+     "min": 0.168,
+     "max": 0.175,
+     "cv": 0.0167476
+    },
+    "p50_ms": {
+     "median": 0.167,
+     "min": 0.159,
+     "max": 0.175,
+     "cv": 0.036195
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0179614
+    },
+    "p99_ms": {
+     "median": 0.279,
+     "min": 0.247,
+     "max": 0.303,
+     "cv": 0.0667676
+    },
+    "server_ops": {
+     "median": 196461.0,
+     "min": 193610.0,
+     "max": 205711.0,
+     "cv": 0.0235095
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p25.listpack128.smismember.r1",
+     "t": "2026-11-25T01:45:45+00:00",
+     "ok": true,
+     "ops": 194235.0,
+     "avg_ms": 0.175,
+     "p50_ms": 0.175,
+     "p95_ms": 0.223,
+     "p99_ms": 0.279,
+     "server_ops": 193610.0
+    },
+    {
+     "rep": 2,
+     "pair": "p25.listpack128.smismember.r2",
+     "t": "2026-11-25T01:47:42+00:00",
+     "ok": true,
+     "ops": 203594.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.303,
+     "server_ops": 203533.0
+    },
+    {
+     "rep": 3,
+     "pair": "p25.listpack128.smismember.r3",
+     "t": "2026-11-25T01:48:32+00:00",
+     "ok": true,
+     "ops": 196984.0,
+     "avg_ms": 0.173,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.287,
+     "server_ops": 196461.0
+    },
+    {
+     "rep": 4,
+     "pair": "p25.listpack128.smismember.r4",
+     "t": "2026-11-25T01:49:55+00:00",
+     "ok": true,
+     "ops": 204465.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.247,
+     "server_ops": 205711.0
+    },
+    {
+     "rep": 5,
+     "pair": "p25.listpack128.smismember.r5",
+     "t": "2026-11-25T01:52:57+00:00",
+     "ok": true,
+     "ops": 196214.0,
+     "avg_ms": 0.173,
+     "p50_ms": 0.167,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 196089.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.smove.P1",
+   "family": "set commands",
+   "command": "smove",
+   "command_line": "SMOVE set:a:000000000000 set:b:000000000000 txxx__rand_int__ | SMOVE set:b:000000000000 set:a:000000000000 txxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 371237.0,
+     "min": 369012.0,
+     "max": 375447.0,
+     "cv": 0.00592943
+    },
+    "avg_ms": {
+     "median": 0.112,
+     "min": 0.111,
+     "max": 0.113,
+     "cv": 0.00669348
+    },
+    "p50_ms": {
+     "median": 0.111,
+     "min": 0.111,
+     "max": 0.111,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.167,
+     "min": 0.159,
+     "max": 0.167,
+     "cv": 0.019347
+    },
+    "p99_ms": {
+     "median": 0.191,
+     "min": 0.191,
+     "max": 0.191,
+     "cv": 0.0
+    },
+    "server_ops": {
+     "median": 371539.0,
+     "min": 366631.0,
+     "max": 377041.0,
+     "cv": 0.0093437
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p31.listpack16.smove.r1",
+     "t": "2026-11-25T01:37:26+00:00",
+     "ok": true,
+     "ops": 373331.0,
+     "avg_ms": 0.111,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 377041.0
+    },
+    {
+     "rep": 2,
+     "pair": "p31.listpack16.smove.r2",
+     "t": "2026-11-25T01:39:22+00:00",
+     "ok": true,
+     "ops": 370922.0,
+     "avg_ms": 0.112,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 371539.0
+    },
+    {
+     "rep": 3,
+     "pair": "p31.listpack16.smove.r3",
+     "t": "2026-11-25T01:40:12+00:00",
+     "ok": true,
+     "ops": 369012.0,
+     "avg_ms": 0.113,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 366631.0
+    },
+    {
+     "rep": 4,
+     "pair": "p31.listpack16.smove.r4",
+     "t": "2026-11-25T01:41:35+00:00",
+     "ok": true,
+     "ops": 371237.0,
+     "avg_ms": 0.112,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 370651.0
+    },
+    {
+     "rep": 5,
+     "pair": "p31.listpack16.smove.r5",
+     "t": "2026-11-25T01:44:38+00:00",
+     "ok": true,
+     "ops": 375447.0,
+     "avg_ms": 0.111,
+     "p50_ms": 0.111,
+     "p95_ms": 0.159,
+     "p99_ms": 0.191,
+     "server_ops": 374033.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.sintercard.P1",
+   "family": "set commands",
+   "command": "sintercard",
+   "command_line": "SINTERCARD 2 set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 19321.4,
+     "min": 19285.7,
+     "max": 19350.8,
+     "cv": 0.00131639
+    },
+    "avg_ms": {
+     "median": 2.586,
+     "min": 2.581,
+     "max": 2.59,
+     "cv": 0.00133091
+    },
+    "p50_ms": {
+     "median": 2.583,
+     "min": 2.583,
+     "max": 2.591,
+     "cv": 0.0012381
+    },
+    "p95_ms": {
+     "median": 2.639,
+     "min": 2.631,
+     "max": 2.695,
+     "cv": 0.00913944
+    },
+    "p99_ms": {
+     "median": 2.711,
+     "min": 2.695,
+     "max": 2.799,
+     "cv": 0.0141782
+    },
+    "server_ops": {
+     "median": 19323.0,
+     "min": 19286.5,
+     "max": 19351.0,
+     "cv": 0.00129819
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p31.listpack128.sintercard.r1",
+     "t": "2026-11-25T01:45:44+00:00",
+     "ok": true,
+     "ops": 19347.7,
+     "avg_ms": 2.582,
+     "p50_ms": 2.583,
+     "p95_ms": 2.631,
+     "p99_ms": 2.695,
+     "server_ops": 19345.8
+    },
+    {
+     "rep": 2,
+     "pair": "p31.listpack128.sintercard.r2",
+     "t": "2026-11-25T01:47:40+00:00",
+     "ok": true,
+     "ops": 19321.4,
+     "avg_ms": 2.586,
+     "p50_ms": 2.583,
+     "p95_ms": 2.639,
+     "p99_ms": 2.703,
+     "server_ops": 19323.0
+    },
+    {
+     "rep": 3,
+     "pair": "p31.listpack128.sintercard.r3",
+     "t": "2026-11-25T01:48:30+00:00",
+     "ok": true,
+     "ops": 19285.7,
+     "avg_ms": 2.59,
+     "p50_ms": 2.591,
+     "p95_ms": 2.639,
+     "p99_ms": 2.711,
+     "server_ops": 19286.5
+    },
+    {
+     "rep": 4,
+     "pair": "p31.listpack128.sintercard.r4",
+     "t": "2026-11-25T01:49:53+00:00",
+     "ok": true,
+     "ops": 19301.3,
+     "avg_ms": 2.588,
+     "p50_ms": 2.583,
+     "p95_ms": 2.695,
+     "p99_ms": 2.799,
+     "server_ops": 19300.1
+    },
+    {
+     "rep": 5,
+     "pair": "p31.listpack128.sintercard.r5",
+     "t": "2026-11-25T01:52:56+00:00",
+     "ok": true,
+     "ops": 19350.8,
+     "avg_ms": 2.581,
+     "p50_ms": 2.583,
+     "p95_ms": 2.671,
+     "p99_ms": 2.751,
+     "server_ops": 19351.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.srandmember.P1",
+   "family": "set commands",
+   "command": "srandmember",
+   "command_line": "SRANDMEMBER set:a:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 200310.0,
+     "min": 197382.0,
+     "max": 203380.0,
+     "cv": 0.00993447
+    },
+    "avg_ms": {
+     "median": 0.168,
+     "min": 0.165,
+     "max": 0.169,
+     "cv": 0.00809347
+    },
+    "p50_ms": {
+     "median": 0.167,
+     "min": 0.167,
+     "max": 0.167,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.207,
+     "min": 0.199,
+     "max": 0.215,
+     "cv": 0.0244427
+    },
+    "p99_ms": {
+     "median": 0.255,
+     "min": 0.247,
+     "max": 0.303,
+     "cv": 0.0750396
+    },
+    "server_ops": {
+     "median": 200222.0,
+     "min": 197356.0,
+     "max": 203556.0,
+     "cv": 0.0103918
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p30.listpack16.srandmember.r1",
+     "t": "2026-11-25T01:37:26+00:00",
+     "ok": true,
+     "ops": 200310.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.167,
+     "p95_ms": 0.207,
+     "p99_ms": 0.303,
+     "server_ops": 200222.0
+    },
+    {
+     "rep": 2,
+     "pair": "p30.listpack16.srandmember.r2",
+     "t": "2026-11-25T01:39:23+00:00",
+     "ok": true,
+     "ops": 198879.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.167,
+     "p95_ms": 0.207,
+     "p99_ms": 0.255,
+     "server_ops": 199607.0
+    },
+    {
+     "rep": 3,
+     "pair": "p30.listpack16.srandmember.r3",
+     "t": "2026-11-25T01:40:13+00:00",
+     "ok": true,
+     "ops": 197382.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.167,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 197356.0
+    },
+    {
+     "rep": 4,
+     "pair": "p30.listpack16.srandmember.r4",
+     "t": "2026-11-25T01:41:36+00:00",
+     "ok": true,
+     "ops": 200377.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.167,
+     "p95_ms": 0.207,
+     "p99_ms": 0.255,
+     "server_ops": 201768.0
+    },
+    {
+     "rep": 5,
+     "pair": "p30.listpack16.srandmember.r5",
+     "t": "2026-11-25T01:44:39+00:00",
+     "ok": true,
+     "ops": 203380.0,
+     "avg_ms": 0.165,
+     "p50_ms": 0.167,
+     "p95_ms": 0.199,
+     "p99_ms": 0.247,
+     "server_ops": 203556.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.sinter.P1",
+   "family": "set commands",
+   "command": "sinter",
+   "command_line": "SINTER set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 18054.1,
+     "min": 17975.4,
+     "max": 18091.2,
+     "cv": 0.00246374
+    },
+    "avg_ms": {
+     "median": 2.763,
+     "min": 2.758,
+     "max": 2.775,
+     "cv": 0.00242486
+    },
+    "p50_ms": {
+     "median": 2.759,
+     "min": 2.759,
+     "max": 2.775,
+     "cv": 0.00231565
+    },
+    "p95_ms": {
+     "median": 2.807,
+     "min": 2.791,
+     "max": 2.815,
+     "cv": 0.00342588
+    },
+    "p99_ms": {
+     "median": 2.887,
+     "min": 2.887,
+     "max": 2.903,
+     "cv": 0.00270905
+    },
+    "server_ops": {
+     "median": 18053.0,
+     "min": 17974.5,
+     "max": 18092.8,
+     "cv": 0.00248547
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p30.listpack128.sinter.r1",
+     "t": "2026-11-25T01:45:45+00:00",
+     "ok": true,
+     "ops": 18081.4,
+     "avg_ms": 2.759,
+     "p50_ms": 2.759,
+     "p95_ms": 2.807,
+     "p99_ms": 2.887,
+     "server_ops": 18081.2
+    },
+    {
+     "rep": 2,
+     "pair": "p30.listpack128.sinter.r2",
+     "t": "2026-11-25T01:47:42+00:00",
+     "ok": true,
+     "ops": 18054.1,
+     "avg_ms": 2.763,
+     "p50_ms": 2.759,
+     "p95_ms": 2.791,
+     "p99_ms": 2.887,
+     "server_ops": 18053.0
+    },
+    {
+     "rep": 3,
+     "pair": "p30.listpack128.sinter.r3",
+     "t": "2026-11-25T01:48:31+00:00",
+     "ok": true,
+     "ops": 18091.2,
+     "avg_ms": 2.758,
+     "p50_ms": 2.759,
+     "p95_ms": 2.791,
+     "p99_ms": 2.887,
+     "server_ops": 18092.8
+    },
+    {
+     "rep": 4,
+     "pair": "p30.listpack128.sinter.r4",
+     "t": "2026-11-25T01:49:54+00:00",
+     "ok": true,
+     "ops": 17975.4,
+     "avg_ms": 2.775,
+     "p50_ms": 2.775,
+     "p95_ms": 2.807,
+     "p99_ms": 2.903,
+     "server_ops": 17974.5
+    },
+    {
+     "rep": 5,
+     "pair": "p30.listpack128.sinter.r5",
+     "t": "2026-11-25T01:52:57+00:00",
+     "ok": true,
+     "ops": 18005.6,
+     "avg_ms": 2.771,
+     "p50_ms": 2.767,
+     "p95_ms": 2.815,
+     "p99_ms": 2.903,
+     "server_ops": 18006.5
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.sinter.P1",
+   "family": "set commands",
+   "command": "sinter",
+   "command_line": "SINTER set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 186500.0,
+     "min": 183294.0,
+     "max": 187841.0,
+     "cv": 0.00916176
+    },
+    "avg_ms": {
+     "median": 0.184,
+     "min": 0.183,
+     "max": 0.185,
+     "cv": 0.0040626
+    },
+    "p50_ms": {
+     "median": 0.183,
+     "min": 0.183,
+     "max": 0.183,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.239,
+     "min": 0.223,
+     "max": 0.239,
+     "cv": 0.0273271
+    },
+    "p99_ms": {
+     "median": 0.287,
+     "min": 0.271,
+     "max": 0.319,
+     "cv": 0.056538
+    },
+    "server_ops": {
+     "median": 186653.0,
+     "min": 183245.0,
+     "max": 187850.0,
+     "cv": 0.00911215
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p32.listpack16.sinter.r1",
+     "t": "2026-11-25T01:37:26+00:00",
+     "ok": true,
+     "ops": 184337.0,
+     "avg_ms": 0.184,
+     "p50_ms": 0.183,
+     "p95_ms": 0.231,
+     "p99_ms": 0.287,
+     "server_ops": 184550.0
+    },
+    {
+     "rep": 2,
+     "pair": "p32.listpack16.sinter.r2",
+     "t": "2026-11-25T01:39:23+00:00",
+     "ok": true,
+     "ops": 183294.0,
+     "avg_ms": 0.185,
+     "p50_ms": 0.183,
+     "p95_ms": 0.239,
+     "p99_ms": 0.319,
+     "server_ops": 183245.0
+    },
+    {
+     "rep": 3,
+     "pair": "p32.listpack16.sinter.r3",
+     "t": "2026-11-25T01:40:13+00:00",
+     "ok": true,
+     "ops": 187841.0,
+     "avg_ms": 0.184,
+     "p50_ms": 0.183,
+     "p95_ms": 0.239,
+     "p99_ms": 0.287,
+     "server_ops": 187850.0
+    },
+    {
+     "rep": 4,
+     "pair": "p32.listpack16.sinter.r4",
+     "t": "2026-11-25T01:41:36+00:00",
+     "ok": true,
+     "ops": 186988.0,
+     "avg_ms": 0.183,
+     "p50_ms": 0.183,
+     "p95_ms": 0.223,
+     "p99_ms": 0.271,
+     "server_ops": 186954.0
+    },
+    {
+     "rep": 5,
+     "pair": "p32.listpack16.sinter.r5",
+     "t": "2026-11-25T01:44:39+00:00",
+     "ok": true,
+     "ops": 186500.0,
+     "avg_ms": 0.185,
+     "p50_ms": 0.183,
+     "p95_ms": 0.239,
+     "p99_ms": 0.279,
+     "server_ops": 186653.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.sinterstore.P1",
+   "family": "set commands",
+   "command": "sinterstore",
+   "command_line": "SINTERSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 15727.4,
+     "min": 15674.0,
+     "max": 15738.1,
+     "cv": 0.00174769
+    },
+    "avg_ms": {
+     "median": 3.177,
+     "min": 3.175,
+     "max": 3.188,
+     "cv": 0.00173796
+    },
+    "p50_ms": {
+     "median": 3.175,
+     "min": 3.175,
+     "max": 3.183,
+     "cv": 0.00123315
+    },
+    "p95_ms": {
+     "median": 3.239,
+     "min": 3.231,
+     "max": 3.247,
+     "cv": 0.00184739
+    },
+    "p99_ms": {
+     "median": 3.311,
+     "min": 3.303,
+     "max": 3.319,
+     "cv": 0.0021611
+    },
+    "server_ops": {
+     "median": 15728.5,
+     "min": 15675.8,
+     "max": 15739.5,
+     "cv": 0.0017036
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p32.listpack128.sinterstore.r1",
+     "t": "2026-11-25T01:45:46+00:00",
+     "ok": true,
+     "ops": 15738.1,
+     "avg_ms": 3.175,
+     "p50_ms": 3.175,
+     "p95_ms": 3.231,
+     "p99_ms": 3.303,
+     "server_ops": 15739.5
+    },
+    {
+     "rep": 2,
+     "pair": "p32.listpack128.sinterstore.r2",
+     "t": "2026-11-25T01:47:42+00:00",
+     "ok": true,
+     "ops": 15728.3,
+     "avg_ms": 3.177,
+     "p50_ms": 3.175,
+     "p95_ms": 3.239,
+     "p99_ms": 3.303,
+     "server_ops": 15729.5
+    },
+    {
+     "rep": 3,
+     "pair": "p32.listpack128.sinterstore.r3",
+     "t": "2026-11-25T01:48:32+00:00",
+     "ok": true,
+     "ops": 15674.0,
+     "avg_ms": 3.188,
+     "p50_ms": 3.183,
+     "p95_ms": 3.247,
+     "p99_ms": 3.319,
+     "server_ops": 15675.8
+    },
+    {
+     "rep": 4,
+     "pair": "p32.listpack128.sinterstore.r4",
+     "t": "2026-11-25T01:49:55+00:00",
+     "ok": true,
+     "ops": 15727.4,
+     "avg_ms": 3.177,
+     "p50_ms": 3.175,
+     "p95_ms": 3.239,
+     "p99_ms": 3.311,
+     "server_ops": 15728.5
+    },
+    {
+     "rep": 5,
+     "pair": "p32.listpack128.sinterstore.r5",
+     "t": "2026-11-25T01:52:58+00:00",
+     "ok": true,
+     "ops": 15677.6,
+     "avg_ms": 3.187,
+     "p50_ms": 3.183,
+     "p95_ms": 3.247,
+     "p99_ms": 3.319,
+     "server_ops": 15681.3
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.sdiff.P1",
+   "family": "set commands",
+   "command": "sdiff",
+   "command_line": "SDIFF set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 177108.0,
+     "min": 174780.0,
+     "max": 180166.0,
+     "cv": 0.0112213
+    },
+    "avg_ms": {
+     "median": 0.192,
+     "min": 0.188,
+     "max": 0.193,
+     "cv": 0.00936573
+    },
+    "p50_ms": {
+     "median": 0.183,
+     "min": 0.183,
+     "max": 0.191,
+     "cv": 0.0210482
+    },
+    "p95_ms": {
+     "median": 0.247,
+     "min": 0.239,
+     "max": 0.247,
+     "cv": 0.0130399
+    },
+    "p99_ms": {
+     "median": 0.303,
+     "min": 0.287,
+     "max": 0.311,
+     "cv": 0.0272129
+    },
+    "server_ops": {
+     "median": 177678.0,
+     "min": 174661.0,
+     "max": 180683.0,
+     "cv": 0.0125768
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p36.listpack16.sdiff.r1",
+     "t": "2026-11-25T01:37:42+00:00",
+     "ok": true,
+     "ops": 174841.0,
+     "avg_ms": 0.192,
+     "p50_ms": 0.183,
+     "p95_ms": 0.247,
+     "p99_ms": 0.303,
+     "server_ops": 174819.0
+    },
+    {
+     "rep": 2,
+     "pair": "p36.listpack16.sdiff.r2",
+     "t": "2026-11-25T01:39:38+00:00",
+     "ok": true,
+     "ops": 174780.0,
+     "avg_ms": 0.193,
+     "p50_ms": 0.191,
+     "p95_ms": 0.247,
+     "p99_ms": 0.295,
+     "server_ops": 174661.0
+    },
+    {
+     "rep": 3,
+     "pair": "p36.listpack16.sdiff.r3",
+     "t": "2026-11-25T01:40:28+00:00",
+     "ok": true,
+     "ops": 177407.0,
+     "avg_ms": 0.192,
+     "p50_ms": 0.191,
+     "p95_ms": 0.247,
+     "p99_ms": 0.303,
+     "server_ops": 177678.0
+    },
+    {
+     "rep": 4,
+     "pair": "p36.listpack16.sdiff.r4",
+     "t": "2026-11-25T01:41:51+00:00",
+     "ok": true,
+     "ops": 177108.0,
+     "avg_ms": 0.19,
+     "p50_ms": 0.183,
+     "p95_ms": 0.247,
+     "p99_ms": 0.311,
+     "server_ops": 177803.0
+    },
+    {
+     "rep": 5,
+     "pair": "p36.listpack16.sdiff.r5",
+     "t": "2026-11-25T01:44:54+00:00",
+     "ok": true,
+     "ops": 180166.0,
+     "avg_ms": 0.188,
+     "p50_ms": 0.183,
+     "p95_ms": 0.239,
+     "p99_ms": 0.287,
+     "server_ops": 180683.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.srem_sadd.P1",
+   "family": "set commands",
+   "command": "srem_sadd",
+   "command_line": "SREM set:a:000000000000 2__rand_int__ | SADD set:a:000000000000 2__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 357886.0,
+     "min": 355714.0,
+     "max": 368365.0,
+     "cv": 0.0130631
+    },
+    "avg_ms": {
+     "median": 0.113,
+     "min": 0.113,
+     "max": 0.114,
+     "cv": 0.00432009
+    },
+    "p50_ms": {
+     "median": 0.111,
+     "min": 0.111,
+     "max": 0.111,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.175,
+     "min": 0.167,
+     "max": 0.175,
+     "cv": 0.0228125
+    },
+    "p99_ms": {
+     "median": 0.191,
+     "min": 0.191,
+     "max": 0.199,
+     "cv": 0.0201812
+    },
+    "server_ops": {
+     "median": 360339.0,
+     "min": 353700.0,
+     "max": 372301.0,
+     "cv": 0.0174287
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p36.intset512.srem_sadd.r1",
+     "t": "2026-11-25T01:46:00+00:00",
+     "ok": true,
+     "ops": 368365.0,
+     "avg_ms": 0.113,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.199,
+     "server_ops": 372301.0
+    },
+    {
+     "rep": 2,
+     "pair": "p36.intset512.srem_sadd.r2",
+     "t": "2026-11-25T01:47:57+00:00",
+     "ok": true,
+     "ops": 357857.0,
+     "avg_ms": 0.114,
+     "p50_ms": 0.111,
+     "p95_ms": 0.167,
+     "p99_ms": 0.191,
+     "server_ops": 358477.0
+    },
+    {
+     "rep": 3,
+     "pair": "p36.intset512.srem_sadd.r3",
+     "t": "2026-11-25T01:48:47+00:00",
+     "ok": true,
+     "ops": 357886.0,
+     "avg_ms": 0.113,
+     "p50_ms": 0.111,
+     "p95_ms": 0.175,
+     "p99_ms": 0.199,
+     "server_ops": 360339.0
+    },
+    {
+     "rep": 4,
+     "pair": "p36.intset512.srem_sadd.r4",
+     "t": "2026-11-25T01:50:10+00:00",
+     "ok": true,
+     "ops": 355714.0,
+     "avg_ms": 0.114,
+     "p50_ms": 0.111,
+     "p95_ms": 0.175,
+     "p99_ms": 0.191,
+     "server_ops": 353700.0
+    },
+    {
+     "rep": 5,
+     "pair": "p36.intset512.srem_sadd.r5",
+     "t": "2026-11-25T01:53:14+00:00",
+     "ok": true,
+     "ops": 364088.0,
+     "avg_ms": 0.113,
+     "p50_ms": 0.111,
+     "p95_ms": 0.175,
+     "p99_ms": 0.191,
+     "server_ops": 364970.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.sunionstore.P1",
+   "family": "set commands",
+   "command": "sunionstore",
+   "command_line": "SUNIONSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 170700.0,
+     "min": 169340.0,
+     "max": 174476.0,
+     "cv": 0.0118737
+    },
+    "avg_ms": {
+     "median": 0.279,
+     "min": 0.274,
+     "max": 0.282,
+     "cv": 0.0122514
+    },
+    "p50_ms": {
+     "median": 0.271,
+     "min": 0.263,
+     "max": 0.271,
+     "cv": 0.0118782
+    },
+    "p95_ms": {
+     "median": 0.343,
+     "min": 0.335,
+     "max": 0.351,
+     "cv": 0.0175356
+    },
+    "p99_ms": {
+     "median": 0.535,
+     "min": 0.487,
+     "max": 0.543,
+     "cv": 0.0394764
+    },
+    "server_ops": {
+     "median": 170758.0,
+     "min": 169103.0,
+     "max": 174313.0,
+     "cv": 0.0120399
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p35.listpack16.sunionstore.r1",
+     "t": "2026-11-25T01:37:42+00:00",
+     "ok": true,
+     "ops": 173011.0,
+     "avg_ms": 0.274,
+     "p50_ms": 0.263,
+     "p95_ms": 0.335,
+     "p99_ms": 0.511,
+     "server_ops": 172944.0
+    },
+    {
+     "rep": 2,
+     "pair": "p35.listpack16.sunionstore.r2",
+     "t": "2026-11-25T01:39:38+00:00",
+     "ok": true,
+     "ops": 170700.0,
+     "avg_ms": 0.279,
+     "p50_ms": 0.271,
+     "p95_ms": 0.343,
+     "p99_ms": 0.535,
+     "server_ops": 170758.0
+    },
+    {
+     "rep": 3,
+     "pair": "p35.listpack16.sunionstore.r3",
+     "t": "2026-11-25T01:40:28+00:00",
+     "ok": true,
+     "ops": 174476.0,
+     "avg_ms": 0.274,
+     "p50_ms": 0.271,
+     "p95_ms": 0.335,
+     "p99_ms": 0.487,
+     "server_ops": 174313.0
+    },
+    {
+     "rep": 4,
+     "pair": "p35.listpack16.sunionstore.r4",
+     "t": "2026-11-25T01:41:51+00:00",
+     "ok": true,
+     "ops": 169421.0,
+     "avg_ms": 0.282,
+     "p50_ms": 0.271,
+     "p95_ms": 0.343,
+     "p99_ms": 0.543,
+     "server_ops": 169103.0
+    },
+    {
+     "rep": 5,
+     "pair": "p35.listpack16.sunionstore.r5",
+     "t": "2026-11-25T01:44:54+00:00",
+     "ok": true,
+     "ops": 169340.0,
+     "avg_ms": 0.281,
+     "p50_ms": 0.271,
+     "p95_ms": 0.351,
+     "p99_ms": 0.535,
+     "server_ops": 169211.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.sdiffstore.P1",
+   "family": "set commands",
+   "command": "sdiffstore",
+   "command_line": "SDIFFSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 15241.9,
+     "min": 15234.6,
+     "max": 15273.1,
+     "cv": 0.00101413
+    },
+    "avg_ms": {
+     "median": 3.278,
+     "min": 3.272,
+     "max": 3.28,
+     "cv": 0.000995575
+    },
+    "p50_ms": {
+     "median": 3.279,
+     "min": 3.271,
+     "max": 3.279,
+     "cv": 0.00119641
+    },
+    "p95_ms": {
+     "median": 3.343,
+     "min": 3.335,
+     "max": 3.343,
+     "cv": 0.00117348
+    },
+    "p99_ms": {
+     "median": 3.407,
+     "min": 3.399,
+     "max": 3.415,
+     "cv": 0.00175634
+    },
+    "server_ops": {
+     "median": 15249.9,
+     "min": 15236.3,
+     "max": 15273.4,
+     "cv": 0.000978474
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p35.listpack128.sdiffstore.r1",
+     "t": "2026-11-25T01:46:00+00:00",
+     "ok": true,
+     "ops": 15237.1,
+     "avg_ms": 3.279,
+     "p50_ms": 3.279,
+     "p95_ms": 3.343,
+     "p99_ms": 3.415,
+     "server_ops": 15236.3
+    },
+    {
+     "rep": 2,
+     "pair": "p35.listpack128.sdiffstore.r2",
+     "t": "2026-11-25T01:47:57+00:00",
+     "ok": true,
+     "ops": 15263.9,
+     "avg_ms": 3.273,
+     "p50_ms": 3.271,
+     "p95_ms": 3.335,
+     "p99_ms": 3.407,
+     "server_ops": 15265.2
+    },
+    {
+     "rep": 3,
+     "pair": "p35.listpack128.sdiffstore.r3",
+     "t": "2026-11-25T01:48:46+00:00",
+     "ok": true,
+     "ops": 15241.9,
+     "avg_ms": 3.278,
+     "p50_ms": 3.279,
+     "p95_ms": 3.343,
+     "p99_ms": 3.407,
+     "server_ops": 15249.9
+    },
+    {
+     "rep": 4,
+     "pair": "p35.listpack128.sdiffstore.r4",
+     "t": "2026-11-25T01:50:09+00:00",
+     "ok": true,
+     "ops": 15273.1,
+     "avg_ms": 3.272,
+     "p50_ms": 3.271,
+     "p95_ms": 3.335,
+     "p99_ms": 3.399,
+     "server_ops": 15273.4
+    },
+    {
+     "rep": 5,
+     "pair": "p35.listpack128.sdiffstore.r5",
+     "t": "2026-11-25T01:53:12+00:00",
+     "ok": true,
+     "ops": 15234.6,
+     "avg_ms": 3.28,
+     "p50_ms": 3.279,
+     "p95_ms": 3.343,
+     "p99_ms": 3.415,
+     "server_ops": 15236.8
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.sismember.P1",
+   "family": "set commands",
+   "command": "sismember",
+   "command_line": "SISMEMBER set:a:000000000000 mxxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 204902.0,
+     "min": 201891.0,
+     "max": 212952.0,
+     "cv": 0.0196919
+    },
+    "avg_ms": {
+     "median": 0.167,
+     "min": 0.161,
+     "max": 0.168,
+     "cv": 0.0158735
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.151,
+     "max": 0.159,
+     "cv": 0.0251552
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0147738
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.255,
+     "max": 0.343,
+     "cv": 0.12016
+    },
+    "server_ops": {
+     "median": 204749.0,
+     "min": 201825.0,
+     "max": 212891.0,
+     "cv": 0.0195875
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p40.listpack128.sismember.r1",
+     "t": "2026-11-25T01:37:42+00:00",
+     "ok": true,
+     "ops": 212952.0,
+     "avg_ms": 0.161,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 212891.0
+    },
+    {
+     "rep": 2,
+     "pair": "p40.listpack128.sismember.r2",
+     "t": "2026-11-25T01:39:38+00:00",
+     "ok": true,
+     "ops": 201891.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 201825.0
+    },
+    {
+     "rep": 3,
+     "pair": "p40.listpack128.sismember.r3",
+     "t": "2026-11-25T01:40:28+00:00",
+     "ok": true,
+     "ops": 203666.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 203831.0
+    },
+    {
+     "rep": 4,
+     "pair": "p40.listpack128.sismember.r4",
+     "t": "2026-11-25T01:41:51+00:00",
+     "ok": true,
+     "ops": 204902.0,
+     "avg_ms": 0.167,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 204749.0
+    },
+    {
+     "rep": 5,
+     "pair": "p40.listpack128.sismember.r5",
+     "t": "2026-11-25T01:44:54+00:00",
+     "ok": true,
+     "ops": 209556.0,
+     "avg_ms": 0.167,
+     "p50_ms": 0.151,
+     "p95_ms": 0.223,
+     "p99_ms": 0.343,
+     "server_ops": 209496.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.smembers.P1",
+   "family": "set commands",
+   "command": "smembers",
+   "command_line": "SMEMBERS set:a:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 24366.2,
+     "min": 23884.7,
+     "max": 25241.6,
+     "cv": 0.0180741
+    },
+    "avg_ms": {
+     "median": 1.125,
+     "min": 1.107,
+     "max": 1.143,
+     "cv": 0.0101585
+    },
+    "p50_ms": {
+     "median": 1.111,
+     "min": 1.103,
+     "max": 1.135,
+     "cv": 0.00972551
+    },
+    "p95_ms": {
+     "median": 1.271,
+     "min": 1.263,
+     "max": 1.295,
+     "cv": 0.00850582
+    },
+    "p99_ms": {
+     "median": 1.367,
+     "min": 1.359,
+     "max": 1.383,
+     "cv": 0.0064108
+    },
+    "server_ops": {
+     "median": 24368.0,
+     "min": 23887.2,
+     "max": 25312.3,
+     "cv": 0.019106
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p40.intset512.smembers.r1",
+     "t": "2026-11-25T01:46:00+00:00",
+     "ok": true,
+     "ops": 24366.2,
+     "avg_ms": 1.126,
+     "p50_ms": 1.119,
+     "p95_ms": 1.279,
+     "p99_ms": 1.367,
+     "server_ops": 24372.2
+    },
+    {
+     "rep": 2,
+     "pair": "p40.intset512.smembers.r2",
+     "t": "2026-11-25T01:47:57+00:00",
+     "ok": true,
+     "ops": 24374.2,
+     "avg_ms": 1.125,
+     "p50_ms": 1.111,
+     "p95_ms": 1.271,
+     "p99_ms": 1.359,
+     "server_ops": 24368.0
+    },
+    {
+     "rep": 3,
+     "pair": "p40.intset512.smembers.r3",
+     "t": "2026-11-25T01:48:46+00:00",
+     "ok": true,
+     "ops": 23884.7,
+     "avg_ms": 1.143,
+     "p50_ms": 1.135,
+     "p95_ms": 1.295,
+     "p99_ms": 1.383,
+     "server_ops": 23887.2
+    },
+    {
+     "rep": 4,
+     "pair": "p40.intset512.smembers.r4",
+     "t": "2026-11-25T01:50:09+00:00",
+     "ok": true,
+     "ops": 24318.6,
+     "avg_ms": 1.123,
+     "p50_ms": 1.111,
+     "p95_ms": 1.271,
+     "p99_ms": 1.359,
+     "server_ops": 24315.4
+    },
+    {
+     "rep": 5,
+     "pair": "p40.intset512.smembers.r5",
+     "t": "2026-11-25T01:53:12+00:00",
+     "ok": true,
+     "ops": 25241.6,
+     "avg_ms": 1.107,
+     "p50_ms": 1.103,
+     "p95_ms": 1.263,
+     "p99_ms": 1.367,
+     "server_ops": 25312.3
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.sunion.P1",
+   "family": "set commands",
+   "command": "sunion",
+   "command_line": "SUNION set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 157552.0,
+     "min": 152067.0,
+     "max": 159730.0,
+     "cv": 0.0197044
+    },
+    "avg_ms": {
+     "median": 0.221,
+     "min": 0.219,
+     "max": 0.224,
+     "cv": 0.00929208
+    },
+    "p50_ms": {
+     "median": 0.215,
+     "min": 0.207,
+     "max": 0.223,
+     "cv": 0.0280537
+    },
+    "p95_ms": {
+     "median": 0.271,
+     "min": 0.271,
+     "max": 0.279,
+     "cv": 0.0117388
+    },
+    "p99_ms": {
+     "median": 0.335,
+     "min": 0.327,
+     "max": 0.343,
+     "cv": 0.0213595
+    },
+    "server_ops": {
+     "median": 157551.0,
+     "min": 151854.0,
+     "max": 160456.0,
+     "cv": 0.0211587
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p34.listpack16.sunion.r1",
+     "t": "2026-11-25T01:37:41+00:00",
+     "ok": true,
+     "ops": 153747.0,
+     "avg_ms": 0.224,
+     "p50_ms": 0.215,
+     "p95_ms": 0.279,
+     "p99_ms": 0.343,
+     "server_ops": 153736.0
+    },
+    {
+     "rep": 2,
+     "pair": "p34.listpack16.sunion.r2",
+     "t": "2026-11-25T01:39:37+00:00",
+     "ok": true,
+     "ops": 159464.0,
+     "avg_ms": 0.221,
+     "p50_ms": 0.215,
+     "p95_ms": 0.271,
+     "p99_ms": 0.335,
+     "server_ops": 159500.0
+    },
+    {
+     "rep": 3,
+     "pair": "p34.listpack16.sunion.r3",
+     "t": "2026-11-25T01:40:27+00:00",
+     "ok": true,
+     "ops": 159730.0,
+     "avg_ms": 0.22,
+     "p50_ms": 0.207,
+     "p95_ms": 0.271,
+     "p99_ms": 0.327,
+     "server_ops": 160456.0
+    },
+    {
+     "rep": 4,
+     "pair": "p34.listpack16.sunion.r4",
+     "t": "2026-11-25T01:41:50+00:00",
+     "ok": true,
+     "ops": 152067.0,
+     "avg_ms": 0.224,
+     "p50_ms": 0.223,
+     "p95_ms": 0.271,
+     "p99_ms": 0.343,
+     "server_ops": 151854.0
+    },
+    {
+     "rep": 5,
+     "pair": "p34.listpack16.sunion.r5",
+     "t": "2026-11-25T01:44:53+00:00",
+     "ok": true,
+     "ops": 157552.0,
+     "avg_ms": 0.219,
+     "p50_ms": 0.207,
+     "p95_ms": 0.271,
+     "p99_ms": 0.327,
+     "server_ops": 157551.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.sunionstore.P1",
+   "family": "set commands",
+   "command": "sunionstore",
+   "command_line": "SUNIONSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 10033.8,
+     "min": 10000.2,
+     "max": 10039.6,
+     "cv": 0.00144097
+    },
+    "avg_ms": {
+     "median": 4.98,
+     "min": 4.977,
+     "max": 4.997,
+     "cv": 0.00145468
+    },
+    "p50_ms": {
+     "median": 4.975,
+     "min": 4.967,
+     "max": 4.983,
+     "cv": 0.00120373
+    },
+    "p95_ms": {
+     "median": 5.079,
+     "min": 5.071,
+     "max": 5.103,
+     "cv": 0.00231421
+    },
+    "p99_ms": {
+     "median": 5.271,
+     "min": 5.167,
+     "max": 9.047,
+     "cv": 0.277033
+    },
+    "server_ops": {
+     "median": 10035.5,
+     "min": 10002.4,
+     "max": 10047.1,
+     "cv": 0.00151615
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p34.listpack128.sunionstore.r1",
+     "t": "2026-11-25T01:45:59+00:00",
+     "ok": true,
+     "ops": 10000.2,
+     "avg_ms": 4.997,
+     "p50_ms": 4.983,
+     "p95_ms": 5.103,
+     "p99_ms": 8.975,
+     "server_ops": 10002.4
+    },
+    {
+     "rep": 2,
+     "pair": "p34.listpack128.sunionstore.r2",
+     "t": "2026-11-25T01:47:56+00:00",
+     "ok": true,
+     "ops": 10022.9,
+     "avg_ms": 4.986,
+     "p50_ms": 4.975,
+     "p95_ms": 5.071,
+     "p99_ms": 9.047,
+     "server_ops": 10023.3
+    },
+    {
+     "rep": 3,
+     "pair": "p34.listpack128.sunionstore.r3",
+     "t": "2026-11-25T01:48:46+00:00",
+     "ok": true,
+     "ops": 10037.2,
+     "avg_ms": 4.979,
+     "p50_ms": 4.967,
+     "p95_ms": 5.071,
+     "p99_ms": 5.271,
+     "server_ops": 10035.5
+    },
+    {
+     "rep": 4,
+     "pair": "p34.listpack128.sunionstore.r4",
+     "t": "2026-11-25T01:50:08+00:00",
+     "ok": true,
+     "ops": 10039.6,
+     "avg_ms": 4.977,
+     "p50_ms": 4.967,
+     "p95_ms": 5.079,
+     "p99_ms": 5.167,
+     "server_ops": 10047.1
+    },
+    {
+     "rep": 5,
+     "pair": "p34.listpack128.sunionstore.r5",
+     "t": "2026-11-25T01:53:11+00:00",
+     "ok": true,
+     "ops": 10033.8,
+     "avg_ms": 4.98,
+     "p50_ms": 4.975,
+     "p95_ms": 5.079,
+     "p99_ms": 5.183,
+     "server_ops": 10035.8
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.sscan.P1",
+   "family": "set commands",
+   "command": "sscan",
+   "command_line": "SSCAN set:a:000000000000 0 COUNT 10",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 170392.0,
+     "min": 164762.0,
+     "max": 170829.0,
+     "cv": 0.0161066
+    },
+    "avg_ms": {
+     "median": 0.192,
+     "min": 0.192,
+     "max": 0.2,
+     "cv": 0.017901
+    },
+    "p50_ms": {
+     "median": 0.183,
+     "min": 0.183,
+     "max": 0.191,
+     "cv": 0.0210482
+    },
+    "p95_ms": {
+     "median": 0.247,
+     "min": 0.247,
+     "max": 0.287,
+     "cv": 0.0604543
+    },
+    "p99_ms": {
+     "median": 0.303,
+     "min": 0.287,
+     "max": 0.391,
+     "cv": 0.115469
+    },
+    "server_ops": {
+     "median": 170353.0,
+     "min": 164681.0,
+     "max": 170824.0,
+     "cv": 0.0163129
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p38.listpack16.sscan.r1",
+     "t": "2026-11-25T01:37:41+00:00",
+     "ok": true,
+     "ops": 165486.0,
+     "avg_ms": 0.2,
+     "p50_ms": 0.191,
+     "p95_ms": 0.287,
+     "p99_ms": 0.391,
+     "server_ops": 165427.0
+    },
+    {
+     "rep": 2,
+     "pair": "p38.listpack16.sscan.r2",
+     "t": "2026-11-25T01:39:38+00:00",
+     "ok": true,
+     "ops": 170682.0,
+     "avg_ms": 0.192,
+     "p50_ms": 0.183,
+     "p95_ms": 0.247,
+     "p99_ms": 0.303,
+     "server_ops": 170718.0
+    },
+    {
+     "rep": 3,
+     "pair": "p38.listpack16.sscan.r3",
+     "t": "2026-11-25T01:40:28+00:00",
+     "ok": true,
+     "ops": 170829.0,
+     "avg_ms": 0.192,
+     "p50_ms": 0.183,
+     "p95_ms": 0.247,
+     "p99_ms": 0.303,
+     "server_ops": 170824.0
+    },
+    {
+     "rep": 4,
+     "pair": "p38.listpack16.sscan.r4",
+     "t": "2026-11-25T01:41:51+00:00",
+     "ok": true,
+     "ops": 164762.0,
+     "avg_ms": 0.198,
+     "p50_ms": 0.191,
+     "p95_ms": 0.255,
+     "p99_ms": 0.311,
+     "server_ops": 164681.0
+    },
+    {
+     "rep": 5,
+     "pair": "p38.listpack16.sscan.r5",
+     "t": "2026-11-25T01:44:54+00:00",
+     "ok": true,
+     "ops": 170392.0,
+     "avg_ms": 0.192,
+     "p50_ms": 0.183,
+     "p95_ms": 0.247,
+     "p99_ms": 0.287,
+     "server_ops": 170353.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.smismember.P1",
+   "family": "set commands",
+   "command": "smismember",
+   "command_line": "SMISMEMBER set:a:000000000000 1__rand_int__ 1__rand_int__ 1__rand_int__ 1__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 194039.0,
+     "min": 186641.0,
+     "max": 196050.0,
+     "cv": 0.0171141
+    },
+    "avg_ms": {
+     "median": 0.175,
+     "min": 0.172,
+     "max": 0.178,
+     "cv": 0.0117934
+    },
+    "p50_ms": {
+     "median": 0.175,
+     "min": 0.167,
+     "max": 0.175,
+     "cv": 0.0228125
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0179614
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.263,
+     "max": 0.279,
+     "cv": 0.0238984
+    },
+    "server_ops": {
+     "median": 194180.0,
+     "min": 186484.0,
+     "max": 196672.0,
+     "cv": 0.0181646
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p38.intset512.smismember.r1",
+     "t": "2026-11-25T01:46:01+00:00",
+     "ok": true,
+     "ops": 194039.0,
+     "avg_ms": 0.175,
+     "p50_ms": 0.175,
+     "p95_ms": 0.223,
+     "p99_ms": 0.263,
+     "server_ops": 194180.0
+    },
+    {
+     "rep": 2,
+     "pair": "p38.intset512.smismember.r2",
+     "t": "2026-11-25T01:47:57+00:00",
+     "ok": true,
+     "ops": 186641.0,
+     "avg_ms": 0.178,
+     "p50_ms": 0.175,
+     "p95_ms": 0.223,
+     "p99_ms": 0.271,
+     "server_ops": 186484.0
+    },
+    {
+     "rep": 3,
+     "pair": "p38.intset512.smismember.r3",
+     "t": "2026-11-25T01:48:46+00:00",
+     "ok": true,
+     "ops": 194924.0,
+     "avg_ms": 0.173,
+     "p50_ms": 0.167,
+     "p95_ms": 0.215,
+     "p99_ms": 0.279,
+     "server_ops": 195033.0
+    },
+    {
+     "rep": 4,
+     "pair": "p38.intset512.smismember.r4",
+     "t": "2026-11-25T01:50:10+00:00",
+     "ok": true,
+     "ops": 192852.0,
+     "avg_ms": 0.175,
+     "p50_ms": 0.175,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 192850.0
+    },
+    {
+     "rep": 5,
+     "pair": "p38.intset512.smismember.r5",
+     "t": "2026-11-25T01:53:12+00:00",
+     "ok": true,
+     "ops": 196050.0,
+     "avg_ms": 0.172,
+     "p50_ms": 0.167,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 196672.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.sdiffstore.P1",
+   "family": "set commands",
+   "command": "sdiffstore",
+   "command_line": "SDIFFSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 205150.0,
+     "min": 201775.0,
+     "max": 207432.0,
+     "cv": 0.00945486
+    },
+    "avg_ms": {
+     "median": 0.175,
+     "min": 0.175,
+     "max": 0.178,
+     "cv": 0.00683371
+    },
+    "p50_ms": {
+     "median": 0.167,
+     "min": 0.167,
+     "max": 0.167,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.223,
+     "min": 0.223,
+     "max": 0.223,
+     "cv": 0.0
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.255,
+     "max": 0.271,
+     "cv": 0.0192382
+    },
+    "server_ops": {
+     "median": 205198.0,
+     "min": 201572.0,
+     "max": 207429.0,
+     "cv": 0.0100154
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p37.listpack16.sdiffstore.r1",
+     "t": "2026-11-25T01:37:41+00:00",
+     "ok": true,
+     "ops": 201775.0,
+     "avg_ms": 0.178,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.263,
+     "server_ops": 201572.0
+    },
+    {
+     "rep": 2,
+     "pair": "p37.listpack16.sdiffstore.r2",
+     "t": "2026-11-25T01:39:37+00:00",
+     "ok": true,
+     "ops": 205150.0,
+     "avg_ms": 0.175,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.263,
+     "server_ops": 205198.0
+    },
+    {
+     "rep": 3,
+     "pair": "p37.listpack16.sdiffstore.r3",
+     "t": "2026-11-25T01:40:27+00:00",
+     "ok": true,
+     "ops": 205533.0,
+     "avg_ms": 0.175,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.255,
+     "server_ops": 206066.0
+    },
+    {
+     "rep": 4,
+     "pair": "p37.listpack16.sdiffstore.r4",
+     "t": "2026-11-25T01:41:50+00:00",
+     "ok": true,
+     "ops": 203352.0,
+     "avg_ms": 0.175,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.263,
+     "server_ops": 203403.0
+    },
+    {
+     "rep": 5,
+     "pair": "p37.listpack16.sdiffstore.r5",
+     "t": "2026-11-25T01:44:52+00:00",
+     "ok": true,
+     "ops": 207432.0,
+     "avg_ms": 0.175,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.271,
+     "server_ops": 207429.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.sismember.P1",
+   "family": "set commands",
+   "command": "sismember",
+   "command_line": "SISMEMBER set:a:000000000000 1__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 202938.0,
+     "min": 202089.0,
+     "max": 206503.0,
+     "cv": 0.00808968
+    },
+    "avg_ms": {
+     "median": 0.166,
+     "min": 0.164,
+     "max": 0.169,
+     "cv": 0.0104655
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.151,
+     "max": 0.159,
+     "cv": 0.0203304
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0147738
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.239,
+     "max": 0.359,
+     "cv": 0.156313
+    },
+    "server_ops": {
+     "median": 203263.0,
+     "min": 202000.0,
+     "max": 207157.0,
+     "cv": 0.00952601
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p37.intset512.sismember.r1",
+     "t": "2026-11-25T01:45:59+00:00",
+     "ok": true,
+     "ops": 204530.0,
+     "avg_ms": 0.166,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.247,
+     "server_ops": 205312.0
+    },
+    {
+     "rep": 2,
+     "pair": "p37.intset512.sismember.r2",
+     "t": "2026-11-25T01:47:55+00:00",
+     "ok": true,
+     "ops": 206503.0,
+     "avg_ms": 0.164,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 207157.0
+    },
+    {
+     "rep": 3,
+     "pair": "p37.intset512.sismember.r3",
+     "t": "2026-11-25T01:48:44+00:00",
+     "ok": true,
+     "ops": 202089.0,
+     "avg_ms": 0.166,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.239,
+     "server_ops": 202000.0
+    },
+    {
+     "rep": 4,
+     "pair": "p37.intset512.sismember.r4",
+     "t": "2026-11-25T01:50:07+00:00",
+     "ok": true,
+     "ops": 202938.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 203263.0
+    },
+    {
+     "rep": 5,
+     "pair": "p37.intset512.sismember.r5",
+     "t": "2026-11-25T01:53:10+00:00",
+     "ok": true,
+     "ops": 202338.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.159,
+     "p95_ms": 0.223,
+     "p99_ms": 0.359,
+     "server_ops": 202370.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack16.none.sinterstore.P1",
+   "family": "set commands",
+   "command": "sinterstore",
+   "command_line": "SINTERSTORE set:dest set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 16,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 204309.0,
+     "min": 199792.0,
+     "max": 211157.0,
+     "cv": 0.0208158
+    },
+    "avg_ms": {
+     "median": 0.169,
+     "min": 0.167,
+     "max": 0.173,
+     "cv": 0.0131626
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.159,
+     "max": 0.167,
+     "cv": 0.0199253
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0179614
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.255,
+     "max": 0.279,
+     "cv": 0.0296235
+    },
+    "server_ops": {
+     "median": 204194.0,
+     "min": 199448.0,
+     "max": 211286.0,
+     "cv": 0.0216478
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p33.listpack16.sinterstore.r1",
+     "t": "2026-11-25T01:37:41+00:00",
+     "ok": true,
+     "ops": 209948.0,
+     "avg_ms": 0.167,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 209987.0
+    },
+    {
+     "rep": 2,
+     "pair": "p33.listpack16.sinterstore.r2",
+     "t": "2026-11-25T01:39:37+00:00",
+     "ok": true,
+     "ops": 203059.0,
+     "avg_ms": 0.17,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 202841.0
+    },
+    {
+     "rep": 3,
+     "pair": "p33.listpack16.sinterstore.r3",
+     "t": "2026-11-25T01:40:27+00:00",
+     "ok": true,
+     "ops": 199792.0,
+     "avg_ms": 0.173,
+     "p50_ms": 0.167,
+     "p95_ms": 0.223,
+     "p99_ms": 0.263,
+     "server_ops": 199448.0
+    },
+    {
+     "rep": 4,
+     "pair": "p33.listpack16.sinterstore.r4",
+     "t": "2026-11-25T01:41:50+00:00",
+     "ok": true,
+     "ops": 211157.0,
+     "avg_ms": 0.167,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 211286.0
+    },
+    {
+     "rep": 5,
+     "pair": "p33.listpack16.sinterstore.r5",
+     "t": "2026-11-25T01:44:53+00:00",
+     "ok": true,
+     "ops": 204309.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.159,
+     "p95_ms": 0.223,
+     "p99_ms": 0.279,
+     "server_ops": 204194.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.sunion.P1",
+   "family": "set commands",
+   "command": "sunion",
+   "command_line": "SUNION set:a:000000000000 set:b:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 24169.9,
+     "min": 23981.0,
+     "max": 24612.8,
+     "cv": 0.00964207
+    },
+    "avg_ms": {
+     "median": 2.048,
+     "min": 2.014,
+     "max": 2.066,
+     "cv": 0.00945567
+    },
+    "p50_ms": {
+     "median": 2.055,
+     "min": 2.015,
+     "max": 2.071,
+     "cv": 0.0108784
+    },
+    "p95_ms": {
+     "median": 2.183,
+     "min": 2.111,
+     "max": 2.199,
+     "cv": 0.0152169
+    },
+    "p99_ms": {
+     "median": 2.287,
+     "min": 2.215,
+     "max": 2.295,
+     "cv": 0.0136347
+    },
+    "server_ops": {
+     "median": 24251.7,
+     "min": 23989.1,
+     "max": 24613.8,
+     "cv": 0.00953166
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p33.listpack128.sunion.r1",
+     "t": "2026-11-25T01:45:59+00:00",
+     "ok": true,
+     "ops": 24612.8,
+     "avg_ms": 2.014,
+     "p50_ms": 2.015,
+     "p95_ms": 2.111,
+     "p99_ms": 2.215,
+     "server_ops": 24613.8
+    },
+    {
+     "rep": 2,
+     "pair": "p33.listpack128.sunion.r2",
+     "t": "2026-11-25T01:47:55+00:00",
+     "ok": true,
+     "ops": 24498.3,
+     "avg_ms": 2.022,
+     "p50_ms": 2.031,
+     "p95_ms": 2.159,
+     "p99_ms": 2.255,
+     "server_ops": 24539.5
+    },
+    {
+     "rep": 3,
+     "pair": "p33.listpack128.sunion.r3",
+     "t": "2026-11-25T01:48:45+00:00",
+     "ok": true,
+     "ops": 23981.0,
+     "avg_ms": 2.066,
+     "p50_ms": 2.071,
+     "p95_ms": 2.199,
+     "p99_ms": 2.295,
+     "server_ops": 23989.1
+    },
+    {
+     "rep": 4,
+     "pair": "p33.listpack128.sunion.r4",
+     "t": "2026-11-25T01:50:08+00:00",
+     "ok": true,
+     "ops": 24160.4,
+     "avg_ms": 2.051,
+     "p50_ms": 2.071,
+     "p95_ms": 2.183,
+     "p99_ms": 2.287,
+     "server_ops": 24251.7
+    },
+    {
+     "rep": 5,
+     "pair": "p33.listpack128.sunion.r5",
+     "t": "2026-11-25T01:53:11+00:00",
+     "ok": true,
+     "ops": 24169.9,
+     "avg_ms": 2.048,
+     "p50_ms": 2.055,
+     "p95_ms": 2.199,
+     "p99_ms": 2.295,
+     "server_ops": 24178.4
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "listpack128.none.sadd_existing.P1",
+   "family": "set commands",
+   "command": "sadd_existing",
+   "command_line": "SADD set:a:000000000000 mxxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "listpack",
+    "size": 128,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 203507.0,
+     "min": 199574.0,
+     "max": 205513.0,
+     "cv": 0.0104801
+    },
+    "avg_ms": {
+     "median": 0.167,
+     "min": 0.164,
+     "max": 0.169,
+     "cv": 0.00975275
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.151,
+     "max": 0.159,
+     "cv": 0.0203304
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.215,
+     "cv": 0.0
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.239,
+     "max": 0.287,
+     "cv": 0.0608365
+    },
+    "server_ops": {
+     "median": 203563.0,
+     "min": 199684.0,
+     "max": 205482.0,
+     "cv": 0.0102266
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p39.listpack128.sadd_existing.r1",
+     "t": "2026-11-25T01:37:41+00:00",
+     "ok": true,
+     "ops": 199574.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 199684.0
+    },
+    {
+     "rep": 2,
+     "pair": "p39.listpack128.sadd_existing.r2",
+     "t": "2026-11-25T01:39:38+00:00",
+     "ok": true,
+     "ops": 203507.0,
+     "avg_ms": 0.166,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 203563.0
+    },
+    {
+     "rep": 3,
+     "pair": "p39.listpack128.sadd_existing.r3",
+     "t": "2026-11-25T01:40:28+00:00",
+     "ok": true,
+     "ops": 205513.0,
+     "avg_ms": 0.164,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.239,
+     "server_ops": 205482.0
+    },
+    {
+     "rep": 4,
+     "pair": "p39.listpack128.sadd_existing.r4",
+     "t": "2026-11-25T01:41:51+00:00",
+     "ok": true,
+     "ops": 202993.0,
+     "avg_ms": 0.167,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.287,
+     "server_ops": 202929.0
+    },
+    {
+     "rep": 5,
+     "pair": "p39.listpack128.sadd_existing.r5",
+     "t": "2026-11-25T01:44:53+00:00",
+     "ok": true,
+     "ops": 205254.0,
+     "avg_ms": 0.167,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 205200.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "intset512.none.scard.P1",
+   "family": "set commands",
+   "command": "scard",
+   "command_line": "SCARD set:a:000000000000",
+   "shape": {
+    "type": "set",
+    "encoding": "intset",
+    "size": 512,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 203100.0,
+     "min": 202724.0,
+     "max": 205243.0,
+     "cv": 0.00491832
+    },
+    "avg_ms": {
+     "median": 0.165,
+     "min": 0.164,
+     "max": 0.169,
+     "cv": 0.0126363
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.151,
+     "max": 0.159,
+     "cv": 0.0251552
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.215,
+     "cv": 0.0
+    },
+    "p99_ms": {
+     "median": 0.263,
+     "min": 0.247,
+     "max": 0.271,
+     "cv": 0.0314027
+    },
+    "server_ops": {
+     "median": 203658.0,
+     "min": 202164.0,
+     "max": 205363.0,
+     "cv": 0.00601651
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p39.intset512.scard.r1",
+     "t": "2026-11-25T01:46:00+00:00",
+     "ok": true,
+     "ops": 203100.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 203658.0
+    },
+    {
+     "rep": 2,
+     "pair": "p39.intset512.scard.r2",
+     "t": "2026-11-25T01:47:56+00:00",
+     "ok": true,
+     "ops": 202812.0,
+     "avg_ms": 0.165,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 202338.0
+    },
+    {
+     "rep": 3,
+     "pair": "p39.intset512.scard.r3",
+     "t": "2026-11-25T01:48:46+00:00",
+     "ok": true,
+     "ops": 204436.0,
+     "avg_ms": 0.164,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.271,
+     "server_ops": 204458.0
+    },
+    {
+     "rep": 4,
+     "pair": "p39.intset512.scard.r4",
+     "t": "2026-11-25T01:50:09+00:00",
+     "ok": true,
+     "ops": 202724.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.263,
+     "server_ops": 202164.0
+    },
+    {
+     "rep": 5,
+     "pair": "p39.intset512.scard.r5",
+     "t": "2026-11-25T01:53:12+00:00",
+     "ok": true,
+     "ops": 205243.0,
+     "avg_ms": 0.164,
+     "p50_ms": 0.151,
+     "p95_ms": 0.215,
+     "p99_ms": 0.247,
+     "server_ops": 205363.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.spop.P1",
+   "family": "set commands",
+   "command": "spop",
+   "command_line": "SPOP set:a:__rand_int__ 1",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 188320.0,
+     "min": 183141.0,
+     "max": 193713.0,
+     "cv": 0.0180067
+    },
+    "avg_ms": {
+     "median": 0.248,
+     "min": 0.235,
+     "max": 0.258,
+     "cv": 0.0328908
+    },
+    "p50_ms": {
+     "median": 0.247,
+     "min": 0.231,
+     "max": 0.255,
+     "cv": 0.0396367
+    },
+    "p95_ms": {
+     "median": 0.287,
+     "min": 0.279,
+     "max": 0.319,
+     "cv": 0.0508492
+    },
+    "p99_ms": {
+     "median": 0.399,
+     "min": 0.383,
+     "max": 0.439,
+     "cv": 0.0478773
+    },
+    "server_ops": {
+     "median": 188280.0,
+     "min": 182884.0,
+     "max": 194442.0,
+     "cv": 0.0195225
+    },
+    "bytes_per_key": {
+     "median": 3737360.0,
+     "min": 3735320.0,
+     "max": 3740050.0,
+     "cv": 0.000419955
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p1.hashtable100k.spop.r1",
+     "t": "2026-11-25T01:40:17+00:00",
+     "ok": true,
+     "ops": 188320.0,
+     "avg_ms": 0.235,
+     "p50_ms": 0.231,
+     "p95_ms": 0.279,
+     "p99_ms": 0.391,
+     "server_ops": 188280.0,
+     "bytes_per_key": 3740050.0
+    },
+    {
+     "rep": 2,
+     "pair": "p1.hashtable100k.spop.r2",
+     "t": "2026-11-25T01:50:23+00:00",
+     "ok": true,
+     "ops": 187215.0,
+     "avg_ms": 0.249,
+     "p50_ms": 0.247,
+     "p95_ms": 0.295,
+     "p99_ms": 0.407,
+     "server_ops": 187745.0,
+     "bytes_per_key": 3737110.0
+    },
+    {
+     "rep": 3,
+     "pair": "p1.hashtable100k.spop.r3",
+     "t": "2026-11-25T01:54:36+00:00",
+     "ok": true,
+     "ops": 188911.0,
+     "avg_ms": 0.248,
+     "p50_ms": 0.247,
+     "p95_ms": 0.287,
+     "p99_ms": 0.399,
+     "server_ops": 188977.0,
+     "bytes_per_key": 3737360.0
+    },
+    {
+     "rep": 4,
+     "pair": "p1.hashtable100k.spop.r4",
+     "t": "2026-11-25T02:01:48+00:00",
+     "ok": true,
+     "ops": 183141.0,
+     "avg_ms": 0.258,
+     "p50_ms": 0.255,
+     "p95_ms": 0.319,
+     "p99_ms": 0.439,
+     "server_ops": 182884.0,
+     "bytes_per_key": 3735320.0
+    },
+    {
+     "rep": 5,
+     "pair": "p1.hashtable100k.spop.r5",
+     "t": "2026-11-25T02:17:41+00:00",
+     "ok": true,
+     "ops": 193713.0,
+     "avg_ms": 0.239,
+     "p50_ms": 0.231,
+     "p95_ms": 0.279,
+     "p99_ms": 0.383,
+     "server_ops": 194442.0,
+     "bytes_per_key": 3738520.0
+    }
+   ],
+   "missing": null
+  },
+  {
+   "id": "hashtable100k.none.sadd_new.P1",
+   "family": "set commands",
+   "command": "sadd_new",
+   "command_line": "SADD set:a:__rand_int__ nxxx__rand_int__",
+   "shape": {
+    "type": "set",
+    "encoding": "hashtable",
+    "size": 100000,
+    "size_unit": "members"
+   },
+   "mix": "none",
+   "pipeline": 1,
+   "clients": 50,
+   "metrics": {
+    "ops": {
+     "median": 204595.0,
+     "min": 202464.0,
+     "max": 208118.0,
+     "cv": 0.00892968
+    },
+    "avg_ms": {
+     "median": 0.168,
+     "min": 0.168,
+     "max": 0.169,
+     "cv": 0.00237812
+    },
+    "p50_ms": {
+     "median": 0.159,
+     "min": 0.159,
+     "max": 0.159,
+     "cv": 0.0
+    },
+    "p95_ms": {
+     "median": 0.215,
+     "min": 0.215,
+     "max": 0.223,
+     "cv": 0.0147738
+    },
+    "p99_ms": {
+     "median": 0.255,
+     "min": 0.239,
+     "max": 0.263,
+     "cv": 0.0309328
+    },
+    "server_ops": {
+     "median": 204932.0,
+     "min": 202380.0,
+     "max": 209065.0,
+     "cv": 0.0105047
+    },
+    "bytes_per_key": {
+     "median": 3735120.0,
+     "min": 3733910.0,
+     "max": 3737620.0,
+     "cv": 0.000372305
+    }
+   },
+   "runs": [
+    {
+     "rep": 1,
+     "pair": "p2.hashtable100k.sadd_new.r1",
+     "t": "2026-11-25T01:40:23+00:00",
+     "ok": true,
+     "ops": 202464.0,
+     "avg_ms": 0.169,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 202380.0,
+     "bytes_per_key": 3736720.0
+    },
+    {
+     "rep": 2,
+     "pair": "p2.hashtable100k.sadd_new.r2",
+     "t": "2026-11-25T01:50:40+00:00",
+     "ok": true,
+     "ops": 208118.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.223,
+     "p99_ms": 0.263,
+     "server_ops": 209065.0,
+     "bytes_per_key": 3735120.0
+    },
+    {
+     "rep": 3,
+     "pair": "p2.hashtable100k.sadd_new.r3",
+     "t": "2026-11-25T01:54:59+00:00",
+     "ok": true,
+     "ops": 204595.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 204932.0,
+     "bytes_per_key": 3737620.0
+    },
+    {
+     "rep": 4,
+     "pair": "p2.hashtable100k.sadd_new.r4",
+     "t": "2026-11-25T02:02:27+00:00",
+     "ok": true,
+     "ops": 204579.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.255,
+     "server_ops": 204656.0,
+     "bytes_per_key": 3733910.0
+    },
+    {
+     "rep": 5,
+     "pair": "p2.hashtable100k.sadd_new.r5",
+     "t": "2026-11-25T02:18:47+00:00",
+     "ok": true,
+     "ops": 205536.0,
+     "avg_ms": 0.168,
+     "p50_ms": 0.159,
+     "p95_ms": 0.215,
+     "p99_ms": 0.239,
+     "server_ops": 205328.0,
+     "bytes_per_key": 3734480.0
+    }
+   ],
+   "missing": null
+  }
+ ]
+}
