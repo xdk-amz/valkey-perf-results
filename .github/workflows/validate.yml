@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: xdk-amz/valkey-perf-benchmark
-          ref: 0297a86e4c2214f03ddf49f15b71a7de75c2ce50
+          ref: 6758d493ece460507c93994a08059802cdf1233f
           path: vpb
           persist-credentials: false
       - name: Check schema, fingerprints, location and identifiers
